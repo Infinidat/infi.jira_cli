@@ -6,16 +6,16 @@ A small command-line tool for those things in JIRA that we do several times a da
 Installation Instructions
 =========================
 
-1. Install the package
+Install the package
 
     easy_install -U infi.jira_cli
 
-2. Install the shell completion helper
+Install the shell completion helper
 
     easy_install -U infi.docopt_completion
     docopt-completion jissue
 
-3. Set-up your JIRA information
+Set-up your JIRA information
 
     jissue config set jira.your.domain your-username your-password
 

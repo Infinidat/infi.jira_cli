@@ -20,7 +20,7 @@ Options:
     --help                       show this screen
 
 More Information:
-    jissue list                 lists open issues
+    jissue list                 lists open issues assigned to self
     jissue start                start progress
     jissue stop                 stop progress
     jissue create               create a new issue
