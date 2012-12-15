@@ -15,9 +15,10 @@ def list_issues(arguments):
     columns = ["Rank", "Type", "Key", "Summary", "Created", "Updated"]
     FORMAT = "{:<8}{:<15}{:<20}{:<50}{:<20}{:<20}"
     sortby_column = arguments.get("--sort-by").capitalize()
+    reverse = arguments.get("--reverse")
     data = [{column: issue_mappings[column](issue) for column in columns}
             for issue in get_issues__assigned_to_me()]
-    sorted_data = sorted(data, key=lambda item: item[sortby_column], reverse=True)
+    sorted_data = sorted(data, key=lambda item: item[sortby_column], reverse=reverse)
 
     print(FORMAT.format(*columns))
     for item in sorted_data:
