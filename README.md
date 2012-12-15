@@ -23,32 +23,35 @@ Set-up your JIRA information
 Usage
 =========================
 
-    jissue
-    infinidat jira issue command-line tool
+jissue
+infinidat jira issue command-line tool
 
-    Usage:
-        jissue list [--sort-by=<column-name>]
-        jissue start <issue>
-        jissue stop <issue>
-        jissue resolve <issue> <message> [--fix-version=<version>]
-        jissue duplicate <issue> <duplicate-ticket> <message>
-        jissue reject <issue> <reason> <message>
-        jissue config show
-        jissue config set <fqdn> <username> <password>
+Usage:
+    jissue list [--sort-by=<column-name>] [--reverse]
+    jissue start <issue>
+    jissue stop <issue>
+    jissue show <issue>
+    jissue create <project> <summary> [--issue-type=<issue-type>] [--component=<component>]
+    jissue comment <issue> <message>
+    jissue resolve <issue> <message> [--resolve-as=<resolution>] [--fix-version=<version>]
+    jissue link <issue> <target-issue> <message>
+    jissue config show
+    jissue config set <fqdn> <username> <password>
 
-    Options:
-        --sort-by=<column-name>     column to sort by [default: Rank]
-        --help                      show this screen
-        <reason>                    resolution type, e.g. "won't fix"
+Options:
+    --sort-by=<column-name>      column to sort by [default: Rank]
+    --resolve-as=<resolution>    resolution string [default: Fixed]
+    --issue-type=<issue-type>    issue type string [default: Bug]
+    --help                       show this screen
 
-    More Information:
-        jissue list                 lists open issues
-        jissue start                start progress
-        jissue stop                 stop progress
-        jissue resolve              resolve an open issue as fixed
-        jissue duplicate            resolve an issue as a duplicate, with link to the duplicated issue
-        jissue reject               resolved an open issue not as fixed
-
+More Information:
+    jissue list                 lists open issues assigned to selffg
+    jissue start                start progress
+    jissue stop                 stop progress
+    jissue create               create a new issue
+    jissue comment              add a comment to an existing issue
+    jissue resolve              resolve an open issue as fixed
+    jissue link                 link between two issues
  
 Checking out the code
 =====================
