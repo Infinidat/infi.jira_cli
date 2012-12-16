@@ -33,11 +33,13 @@ def list_issues(arguments):
 
 
 def start(arguments):
-    raise NotImplementedError()
+    from .jira_adapter import start_progress
+    start_progress(arguments.get("<issue>"))
 
 
 def stop(arguments):
-    raise NotImplementedError()
+    from .jira_adapter import stop_progress
+    stop_progress(arguments.get("<issue>"))
 
 
 def show(arguments):

@@ -34,15 +34,29 @@ def from_jira_formatted_date(formatted_string):
     return from_jira_formatted_datetime(formatted_string+'T00:00:00.000+0000')
 
 
+def transition_issue(key, transition_string, fields):
+    jira = get_jira()
+    issue = jira.issue(key)
+    [transition] = [item['id'] for item in jira.transitions(issue) if item['name'] == transition_string]
+    jira.transition_issue(issue=issue.key, transitionId=transition, fields=fields)
+
+
 def resolve_issue(key, resolution_string, fix_versions_strings):
     jira = get_jira()
     issue = jira.issue(key)
-    [transition] = [item['id'] for item in jira.transitions(issue) if item['name'] == "Resolve Issue"]
     [resolution] = [item.id for item in jira.resolutions() if item.name == resolution_string]
     project_versions = jira.project_versions(issue.fields().project)
     fix_versions = [dict(id=item.id) for item in project_versions if item.name in fix_versions_strings]
     fields = dict(resolution=dict(id=resolution), fixVersions=fix_versions)
-    jira.transition_issue(issue=issue.key, transitionId=transition, fields=fields)
+    transition_issue(key, "Resolve Issue", fields)
+
+
+def start_progress(key):
+    transition_issue(key, "Start Progress", dict())
+
+
+def stop_progress(key):
+    transition_issue(key, "Stop Progress", dict())
 
 
 def get_next_release_name(key):
