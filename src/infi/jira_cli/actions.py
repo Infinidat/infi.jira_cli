@@ -112,7 +112,7 @@ def resolve(arguments):
 def link(arguments):
     from .jira_adapter import create_link
     create_link(arguments.get("--link-type"), arguments.get("<issue>").upper(),
-                arguments.get("<target-issue>"), arguments.get("<message>"))
+                arguments.get("<target-issue>").upper(), arguments.get("<message>"))
 
 
 def create(arguments):
