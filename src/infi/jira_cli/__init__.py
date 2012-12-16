@@ -44,9 +44,9 @@ def _jissue(argv):
     from .actions import choose_action
     arguments = _get_arguments(argv)
     action = choose_action(argv)
-    action(arguments)
-
+    return action(arguments)
 
 def jissue():
     from sys import argv
-    return _jissue(argv[1:])
+    _jissue(argv[1:])
+    return 0

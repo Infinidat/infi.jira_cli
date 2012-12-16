@@ -52,7 +52,7 @@ Usage
         jissue comment              add a comment to an existing issue
         jissue resolve              resolve an open issue as fixed
         jissue link                 link between two issues
-     
+
 
 Checking out the code
 =====================
@@ -65,3 +65,10 @@ and then, run:
 
     projector devenv build
 
+
+Running tests
+=============
+
+Before running the tests, you'll need set the jira configuration and pass some environment variables to nose:
+
+    TEST_PROJECT= bin/nosetests

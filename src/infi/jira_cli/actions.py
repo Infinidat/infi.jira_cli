@@ -98,7 +98,7 @@ def create(arguments):
     issue_type_name = arguments.get("--issue-type")
     issue = create_issue(project_key, summary, component_name, issue_type_name)
     show({"<issue>": issue.key})
-
+    return issue.key
 
 def config_show(arguments):
     from .config import Configuration
