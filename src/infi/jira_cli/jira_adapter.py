@@ -114,5 +114,6 @@ issue_mappings.update(**{
                          'Affects Version/s': lambda issue: [item.name for item in issue.fields().versions],
                          'Fix Version/s': lambda issue: [item.name for item in issue.fields().fixVersions],
                          'Component/s': lambda issue: [item.name for item in issue.fields().components],
-                         'Issue Links': lambda issue: issue.fields().issueLinks,
+                         'Issue Links': lambda issue: issue.fields().issuelinks,
+                         'Sub-Tasks': lambda issue: issue.fields().subtasks,
                       })

@@ -3,7 +3,7 @@ from __future__ import print_function
 
 def format(value, slice=None):
     from datetime import datetime
-    from jira.resources import Comment
+    from jira.resources import Comment, Issue, IssueLink
     if isinstance(value, datetime):
         return value.strftime("%Y-%m-%d %H:%M")
     if isinstance(value, (list, tuple)):
@@ -12,6 +12,22 @@ def format(value, slice=None):
             return "\n\n".join(["{0} added a comment - {1}\n{2}".format(item.author.displayName,
                                                                       format(from_jira_formatted_datetime(item.created)),
                                                                       item.body)
+                              for item in value])
+        if len(value) and isinstance(value[0], (IssueLink, )):
+            from .jira_adapter import issue_mappings
+            get_linked_issue = lambda item: getattr(item, "inwardIssue", getattr(item, "outwardIssue", None))
+            get_link_text = lambda item: item.type.inward if hasattr(item, "inwardIssue") else item.type.outward
+            return "\n\n".join(["{0:<20} {1:<15} {2:<15} {3}".format(get_link_text(item),
+                                                                     issue_mappings['Key'](get_linked_issue(item)),
+                                                                     issue_mappings['Status'](get_linked_issue(item)),
+                                                                     issue_mappings['Summary'](get_linked_issue(item)))
+                                for item in value])
+        if len(value) and isinstance(value[0], (Issue, )):
+            from .jira_adapter import issue_mappings
+            return "\n".join(["{0:<20} {1:<15} {2:<15} {3}".format('',
+                                                                   issue_mappings['Key'](item),
+                                                                   issue_mappings['Status'](item),
+                                                                   issue_mappings['Summary'](item))
                               for item in value])
         return ', '.join(value)
     return str(value)[:slice]
@@ -54,6 +70,12 @@ def show(arguments):
     Components: {Component/s:<60}                       Created: {Created}
     Labels: {Labels:<55}                                Updated: {Updated}
 
+    Issue Links:
+    {Issue Links}
+
+    Sub-Tasks:
+    {Sub-Tasks}
+
     Description:
     {Description}
 
@@ -64,7 +86,7 @@ def show(arguments):
                 "Priority", "Resolution", "Assignee", "Reporter",
                 "Affects Version/s", "Fix Version/s", "Component/s",
                 "Created", "Updated", "Labels",
-                "Description", "Comments"]
+                "Description", "Comments", "Issue Links", "Sub-Tasks"]
     from .jira_adapter import get_issue, issue_mappings
     issue = get_issue(arguments.get("<issue>").upper())
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
