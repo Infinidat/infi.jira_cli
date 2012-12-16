@@ -100,7 +100,7 @@ def get_issue(key):
     return get_jira().issue(key)
 
 
-issue_mappings = dict(Rank=lambda issue: int(issue.fields().customfield_10700),
+issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),
                     Type=lambda issue: issue.fields().issuetype.name,
                     Key=lambda issue: issue.key,
                     Summary=lambda issue: issue.fields().summary,
@@ -115,11 +115,9 @@ issue_mappings = dict(Rank=lambda issue: int(issue.fields().customfield_10700),
                     Reporter=lambda issue: issue.fields().reporter.displayName,
                     Labels=lambda issue: issue.fields().labels,
                     Comments=lambda issue: issue.fields().comment.comments,
+                    AffectsVersions=lambda issue: [item.name for item in issue.fields().versions],
+                    FixVersions=lambda issue: [item.name for item in issue.fields().fixVersions],
+                    Components=lambda issue: [item.name for item in issue.fields().components],
+                    IssueLinks=lambda issue: issue.fields().issuelinks,
+                    SubTasks=lambda issue: issue.fields().subtasks,
                     )
-issue_mappings.update(**{
-                         'Affects Version/s': lambda issue: [item.name for item in issue.fields().versions],
-                         'Fix Version/s': lambda issue: [item.name for item in issue.fields().fixVersions],
-                         'Component/s': lambda issue: [item.name for item in issue.fields().components],
-                         'Issue Links': lambda issue: issue.fields().issuelinks,
-                         'Sub-Tasks': lambda issue: issue.fields().subtasks,
-                      })

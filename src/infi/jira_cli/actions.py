@@ -66,15 +66,15 @@ def show(arguments):
 
     Type:              {Type:<11}                       Status:        {Status:<15}            Assignee: {Assignee:<15}
     Priority:          {Priority:<15}                   Resolution:    {Resolution:<19}        Reporter: {Reporter}
-    Affects Version/s: {Affects Version/s:<24}          Fix Version/s: {Fix Version/s:<26}
-    Components: {Component/s:<60}                       Created: {Created}
+    Affects Version/s: {AffectsVersions:<24}            Fix Version/s: {FixVersions:<26}
+    Components: {Components:<60}                        Created: {Created}
     Labels: {Labels:<55}                                Updated: {Updated}
 
     Issue Links:
-    {Issue Links}
+    {IssueLinks}
 
     Sub-Tasks:
-    {Sub-Tasks}
+    {SubTasks}
 
     Description:
     {Description}
@@ -84,9 +84,9 @@ def show(arguments):
     """
     keywords = ["Project", "Key", "Summary", "Type", "Status",
                 "Priority", "Resolution", "Assignee", "Reporter",
-                "Affects Version/s", "Fix Version/s", "Component/s",
+                "AffectsVersions", "FixVersions", "Components",
                 "Created", "Updated", "Labels",
-                "Description", "Comments", "Issue Links", "Sub-Tasks"]
+                "Description", "Comments", "IssueLinks", "SubTasks"]
     from .jira_adapter import get_issue, issue_mappings
     issue = get_issue(arguments.get("<issue>").upper())
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
