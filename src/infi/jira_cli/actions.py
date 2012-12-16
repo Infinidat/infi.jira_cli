@@ -3,9 +3,16 @@ from __future__ import print_function
 
 def format(value, slice=None):
     from datetime import datetime
+    from jira.resources import Comment
     if isinstance(value, datetime):
         return value.strftime("%Y-%m-%d %H:%M")
     if isinstance(value, (list, tuple)):
+        if len(value) and isinstance(value[0], (Comment, )):
+            from .jira_adapter import from_jira_formatted_datetime
+            return "\n".join(["{0} added a comment - {1}\n{2}".format(item.author.displayName,
+                                                                      format(from_jira_formatted_datetime(item.created)),
+                                                                      item.body)
+                              for item in value])
         return ', '.join(value)
     return str(value)[:slice]
 
