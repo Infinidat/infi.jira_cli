@@ -9,7 +9,7 @@ def format(value, slice=None):
     if isinstance(value, (list, tuple)):
         if len(value) and isinstance(value[0], (Comment, )):
             from .jira_adapter import from_jira_formatted_datetime
-            return "\n".join(["{0} added a comment - {1}\n{2}".format(item.author.displayName,
+            return "\n\n".join(["{0} added a comment - {1}\n{2}".format(item.author.displayName,
                                                                       format(from_jira_formatted_datetime(item.created)),
                                                                       item.body)
                               for item in value])
