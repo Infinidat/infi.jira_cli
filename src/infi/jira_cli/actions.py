@@ -87,7 +87,9 @@ def resolve(arguments):
 
 
 def link(arguments):
-    raise NotImplementedError()
+    from .jira_adapter import create_link
+    create_link(arguments.get("--link-type"), arguments.get("<issue>").upper(),
+                arguments.get("<target-issue>"), arguments.get("<message>"))
 
 
 def create(arguments):

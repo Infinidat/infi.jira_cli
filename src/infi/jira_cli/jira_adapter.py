@@ -82,6 +82,13 @@ def create_issue(project_key, summary, component_name, issue_type_name):
     return issue
 
 
+def create_link(link_type_name, from_key, to_key, comment):
+    jira = get_jira()
+    [link_type] = [link_type for link_type in jira.issue_link_types()
+                   if link_type.name == unicode(link_type_name)]
+    jira.create_issue_link(type=link_type.name, inwardIssue=from_key, outwardIssue=to_key, comment=dict(body=comment))
+
+
 @cached_function
 def get_issue(key):
     return get_jira().issue(key)
