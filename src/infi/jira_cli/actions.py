@@ -34,12 +34,12 @@ def list_issues(arguments):
 
 def start(arguments):
     from .jira_adapter import start_progress
-    start_progress(arguments.get("<issue>"))
+    start_progress(arguments.get("<issue>").upper())
 
 
 def stop(arguments):
     from .jira_adapter import stop_progress
-    stop_progress(arguments.get("<issue>"))
+    stop_progress(arguments.get("<issue>").upper())
 
 
 def show(arguments):
@@ -66,19 +66,19 @@ def show(arguments):
                 "Created", "Updated", "Labels",
                 "Description", "Comments"]
     from .jira_adapter import get_issue, issue_mappings
-    issue = get_issue(arguments.get("<issue>"))
+    issue = get_issue(arguments.get("<issue>").upper())
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
     print(dedent(template).format(**kwargs))
 
 
 def comment(arguments):
     from .jira_adapter import comment_on_issue
-    comment_on_issue(arguments.get("<issue>"), arguments.get("<message>"))
+    comment_on_issue(arguments.get("<issue>").upper(), arguments.get("<message>"))
 
 
 def resolve(arguments):
     from .jira_adapter import resolve_issue, get_next_release_name
-    key = arguments.get("<issue>")
+    key = arguments.get("<issue>").upper()
     message = arguments.get("<message>")
     fix_version = arguments.get("--fix-version") or get_next_release_name(key)
     resolution = arguments.get("--resolve-as")
