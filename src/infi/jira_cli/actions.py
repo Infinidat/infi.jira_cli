@@ -100,10 +100,11 @@ def comment(arguments):
 
 def resolve(arguments):
     from .jira_adapter import resolve_issue, get_next_release_name
+    from string import capwords
     key = arguments.get("<issue>").upper()
     message = arguments.get("<message>")
     fix_version = arguments.get("--fix-version") or get_next_release_name(key)
-    resolution = arguments.get("--resolve-as")
+    resolution = capwords(arguments.get("--resolve-as"))
     resolve_issue(key, resolution, [fix_version])
     if arguments.get("<message>"):
         comment(arguments)
@@ -111,16 +112,18 @@ def resolve(arguments):
 
 def link(arguments):
     from .jira_adapter import create_link
-    create_link(arguments.get("--link-type"), arguments.get("<issue>").upper(),
+    from string import capwords
+    create_link(capwords(arguments.get("--link-type")), arguments.get("<issue>").upper(),
                 arguments.get("<target-issue>").upper(), arguments.get("<message>"))
 
 
 def create(arguments):
     from .jira_adapter import create_issue
+    from string import capwords
     project_key = arguments.get("<project>").upper()
     summary = arguments.get("<summary>")
     component_name = arguments.get("--component")
-    issue_type_name = arguments.get("--issue-type")
+    issue_type_name = capwords(arguments.get("--issue-type"))
     issue = create_issue(project_key, summary, component_name, issue_type_name)
     show({"<issue>": issue.key})
     return issue.key
