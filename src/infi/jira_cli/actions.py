@@ -66,7 +66,7 @@ def show(arguments):
     from .jira_adapter import get_issue, issue_mappings
     issue = get_issue(arguments.get("<issue>"))
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
-    print(dedent(template.format(**kwargs)))
+    print(dedent(template).format(**kwargs))
 
 
 def comment(arguments):
