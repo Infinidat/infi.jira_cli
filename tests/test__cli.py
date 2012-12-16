@@ -28,7 +28,7 @@ class TestCase(unittest.TestCase):
         jira_cli._jissue(["comment", key, "this is a test"])
         jira_cli._jissue(["stop", key])
         jira_cli._jissue(["show", key])
-        jira_cli._jissue(["link", key, target, "this is a test"])
+        jira_cli._jissue(["link", key, target])
         jira_cli._jissue(["show", key])
         jira_cli._jissue(["resolve", target, "this is a test"])
         jira_cli._jissue(["resolve", key, "this is a test"])

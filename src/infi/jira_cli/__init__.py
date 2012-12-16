@@ -8,8 +8,8 @@ Usage:
     jissue show <issue>
     jissue create <project> <summary> [--issue-type=<issue-type>] [--component=<component>]
     jissue comment <issue> <message>
-    jissue resolve <issue> <message> [--resolve-as=<resolution>] [--fix-version=<version>]
-    jissue link <issue> <target-issue> <message> [--link-type=<link-type>]
+    jissue resolve <issue> [<message>] [--resolve-as=<resolution>] [--fix-version=<version>]
+    jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
     jissue config show
     jissue config set <fqdn> <username> <password>
 

@@ -105,7 +105,8 @@ def resolve(arguments):
     fix_version = arguments.get("--fix-version") or get_next_release_name(key)
     resolution = arguments.get("--resolve-as")
     resolve_issue(key, resolution, [fix_version])
-    comment(arguments)
+    if arguments.get("<message>"):
+        comment(arguments)
 
 
 def link(arguments):

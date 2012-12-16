@@ -86,7 +86,11 @@ def create_link(link_type_name, from_key, to_key, comment):
     jira = get_jira()
     [link_type] = [link_type for link_type in jira.issue_link_types()
                    if link_type.name == unicode(link_type_name)]
-    jira.create_issue_link(type=link_type.name, inwardIssue=from_key, outwardIssue=to_key, comment=dict(body=comment))
+
+    kwargs = dict(type=link_type.name, inwardIssue=from_key, outwardIssue=to_key)
+    if comment:
+        kwargs.update(**dict(comment=dict(body=comment)))
+    jira.create_issue_link(**kwargs)
 
 
 @cached_function
