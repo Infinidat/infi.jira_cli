@@ -31,7 +31,7 @@ Usage
         jissue start <issue>
         jissue stop <issue>
         jissue show <issue>
-        jissue create <project> <summary> [--issue-type=<issue-type>] [--component=<component>]
+        jissue create <project> <summary> [--short] [--issue-type=<issue-type>] [--component=<component>]
         jissue comment <issue> <message>
         jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
         jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]

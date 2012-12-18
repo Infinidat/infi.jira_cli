@@ -142,7 +142,7 @@ def create(arguments):
     component_name = arguments.get("--component")
     issue_type_name = capwords(arguments.get("--issue-type"))
     issue = create_issue(project_key, summary, component_name, issue_type_name)
-    show({"<issue>": issue.key})
+    print(issue.key) if argument.get("--short") else show({"<issue>": issue.key})
     return issue.key
 
 def config_show(arguments):
