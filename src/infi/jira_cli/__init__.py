@@ -18,7 +18,7 @@ Options:
     --resolve-as=<resolution>    resolution string [default: Fixed]
     --issue-type=<issue-type>    issue type string [default: Bug]
     --link-type=<link-type>      link type string [default: Duplicate]
-    --commit=<commit>            deduce issue and message from commit
+    --commit=<commit>            deduce issue and message from git commit
     --help                       show this screen
 
 More Information:
