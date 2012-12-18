@@ -98,11 +98,28 @@ def comment(arguments):
     comment_on_issue(arguments.get("<issue>").upper(), arguments.get("<message>"))
 
 
+def _get_issue_key_and_message_from_commit(commit_string):
+    from gitpy import LocalRepository
+    from json import dumps
+    git = LocalRepository(".")
+    commit = git._getCommitByPartialHash(commit_string)
+    describe = git._getOutputAssertSuccess("git describe --tags {0}".format(commit.name)).strip()
+    key, message = commit.getSubject().split(' ', 1)
+    body = commit.getMessageBody()
+    template = """\nresolved in commit:\n{{noformat}}\n{}\n{{noformat}}"""
+    value = dict(hash=commit.name, describe=describe, summary=message, body=body)
+    return key, template.format(dumps(value, indent=True))
+
+
 def resolve(arguments):
     from .jira_adapter import resolve_issue, get_next_release_name
     from string import capwords
+    commit = arguments.get("--commit")
+    if commit:
+        key, message = _get_issue_key_and_message_from_commit(commit)
+        arguments['<issue>'] = key
+        arguments['<message>'] = message
     key = arguments.get("<issue>").upper()
-    message = arguments.get("<message>")
     fix_version = arguments.get("--fix-version") or get_next_release_name(key)
     resolution = capwords(arguments.get("--resolve-as"))
     resolve_issue(key, resolution, [fix_version])

@@ -8,7 +8,7 @@ Usage:
     jissue show <issue>
     jissue create <project> <summary> [--issue-type=<issue-type>] [--component=<component>]
     jissue comment <issue> <message>
-    jissue resolve <issue> [<message>] [--resolve-as=<resolution>] [--fix-version=<version>]
+    jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
     jissue config show
     jissue config set <fqdn> <username> <password>
@@ -18,6 +18,7 @@ Options:
     --resolve-as=<resolution>    resolution string [default: Fixed]
     --issue-type=<issue-type>    issue type string [default: Bug]
     --link-type=<link-type>      link type string [default: Duplicate]
+    --commit=<commit>            deduce issue and message from commit
     --help                       show this screen
 
 More Information:
