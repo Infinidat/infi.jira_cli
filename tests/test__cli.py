@@ -33,3 +33,7 @@ class TestCase(unittest.TestCase):
         jira_cli._jissue(["resolve", target, "this is a test"])
         jira_cli._jissue(["resolve", key, "this is a test"])
         jira_cli._jissue(["show", key])
+
+    def test_show__unicode(self):
+        jira_cli._jissue(["show", "HIP-555"])
+

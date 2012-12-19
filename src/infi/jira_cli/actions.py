@@ -30,7 +30,7 @@ def format(value, slice=None):
                                                                    issue_mappings['Summary'](item))
                               for item in value])
         return ', '.join(value)
-    return str(value)[:slice]
+    return unicode(value)[:slice]
 
 
 def list_issues(arguments):
@@ -60,7 +60,7 @@ def stop(arguments):
 
 def show(arguments):
     from textwrap import dedent
-    template = """
+    template = u"""
     {Project} / {Key}
     {Summary}
 
