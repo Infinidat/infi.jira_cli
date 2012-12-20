@@ -104,7 +104,8 @@ def _get_issue_key_and_message_from_commit(commit_string):
     git = LocalRepository(".")
     commit = git._getCommitByPartialHash(commit_string)
     describe = git._getOutputAssertSuccess("git describe --tags {0}".format(commit.name)).strip()
-    key, message = commit.getSubject().split(' ', 1)
+    subject = '{0} '.format(commit.getSubject())
+    key, message = subject.split(' ', 1)
     body = commit.getMessageBody()
     template = """\nresolved in commit:\n{{noformat}}\n{}\n{{noformat}}"""
     value = dict(hash=commit.name, describe=describe, summary=message, body=body)
