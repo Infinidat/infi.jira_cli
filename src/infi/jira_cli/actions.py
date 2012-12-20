@@ -66,8 +66,8 @@ def show(arguments):
 
     Type:              {Type:<11}                       Status:        {Status:<15}            Assignee: {Assignee:<15}
     Priority:          {Priority:<15}                   Resolution:    {Resolution:<19}        Reporter: {Reporter}
-    Affects Version/s: {AffectsVersions:<24}            Fix Version/s: {FixVersions:<26}
-    Components: {Components:<60}                        Created: {Created}
+    Affects Version/s: {AffectsVersions:<22}            Fix Version/s: {FixVersions:<26}
+    Components: {Components:<59}                        Created: {Created}
     Labels: {Labels:<55}                                Updated: {Updated}
 
     Issue Links:
