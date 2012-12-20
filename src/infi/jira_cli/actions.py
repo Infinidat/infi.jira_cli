@@ -126,7 +126,7 @@ def resolve(arguments):
     resolve_issue(key, resolution, [fix_version])
     if arguments.get("<message>"):
         comment(arguments)
-
+    print("{0} resolved in version {1}".format(key, fix_version))
 
 def link(arguments):
     from .jira_adapter import create_link
