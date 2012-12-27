@@ -10,6 +10,7 @@ Usage:
     jissue comment <issue> <message>
     jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
+    jissue assign <issue> (<assignee> | --automatic | --to-no-one | --to-me)
     jissue config show
     jissue config set <fqdn> <username> <password>
 

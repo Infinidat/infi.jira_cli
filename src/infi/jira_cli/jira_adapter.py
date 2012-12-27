@@ -23,6 +23,10 @@ def comment_on_issue(key, message):
     get_jira().add_comment(issue=key, body=message)
 
 
+def assign_issue(key, assignee):
+    get_jira().assign_issue(key, assignee)
+
+
 def from_jira_formatted_datetime(formatted_string):
     # http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
     import re

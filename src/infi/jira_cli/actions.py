@@ -146,6 +146,17 @@ def create(arguments):
     print(issue.key) if arguments.get("--short") else show({"<issue>": issue.key})
     return issue.key
 
+
+def assign(arguments):
+    from .jira_adapter import assign_issue
+    from .config import Configuration
+    key = arguments.get("<issue>").upper()
+    assignee = arguments.get("<assignee>") if arguments.get("<assignee>") else \
+        "-1" if arguments.get("--automatic") else \
+        Configuration.from_file().username if arguments.get("--to-me") else None  # --to-no-one
+    assign_issue(key, assignee)
+
+
 def config_show(arguments):
     from .config import Configuration
     try:
@@ -173,6 +184,7 @@ def get_mappings():
         comment=comment,
         resolve=resolve,
         link=link,
+        assign=assign,
         config=dict(show=config_show, set=config_set)
     )
 
