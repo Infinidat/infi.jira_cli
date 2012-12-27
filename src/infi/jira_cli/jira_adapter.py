@@ -23,6 +23,10 @@ def comment_on_issue(key, message):
     get_jira().add_comment(issue=key, body=message)
 
 
+def assign_issue(key, assignee):
+    get_jira().assign_issue(key, assignee)
+
+
 def from_jira_formatted_datetime(formatted_string):
     # http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
     import re
@@ -33,18 +37,20 @@ def from_jira_formatted_datetime(formatted_string):
 def from_jira_formatted_date(formatted_string):
     return from_jira_formatted_datetime(formatted_string+'T00:00:00.000+0000')
 
+def matches(str_a, str_b):
+    return str_a is not None and str_b is not None and str_a.lower() == str_b.lower()
 
 def transition_issue(key, transition_string, fields):
     jira = get_jira()
     issue = jira.issue(key)
-    [transition] = [item['id'] for item in jira.transitions(issue) if item['name'] == transition_string]
+    [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
     jira.transition_issue(issue=issue.key, transitionId=transition, fields=fields)
 
 
 def resolve_issue(key, resolution_string, fix_versions_strings):
     jira = get_jira()
     issue = jira.issue(key)
-    [resolution] = [item.id for item in jira.resolutions() if item.name == resolution_string]
+    [resolution] = [item.id for item in jira.resolutions() if matches(item.name, resolution_string)]
     project_versions = jira.project_versions(issue.fields().project)
     fix_versions = [dict(id=item.id) for item in project_versions if item.name in fix_versions_strings]
     fields = dict(resolution=dict(id=resolution), fixVersions=fix_versions)
@@ -72,9 +78,9 @@ def create_issue(project_key, summary, component_name, issue_type_name):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
-                    if issue_type.name == unicode(issue_type_name)]
+                    if matches(issue_type.name, issue_type_name)]
     components = [component for component in project.components
-                    if component.name == unicode(component_name)]
+                    if matches(component.name, component_name)]
     fields = dict(project=dict(id=str(project.id)), summary=summary,
                   components=[dict(id=str(component.id)) for component in components],
                   issuetype=dict(id=str(issue_type.id)))
@@ -82,12 +88,23 @@ def create_issue(project_key, summary, component_name, issue_type_name):
     return issue
 
 
+def create_link(link_type_name, from_key, to_key, comment):
+    jira = get_jira()
+    [link_type] = [link_type for link_type in jira.issue_link_types()
+                   if matches(link_type.name, link_type_name)]
+
+    kwargs = dict(type=link_type.name, inwardIssue=from_key, outwardIssue=to_key)
+    if comment:
+        kwargs.update(**dict(comment=dict(body=comment)))
+    jira.create_issue_link(**kwargs)
+
+
 @cached_function
 def get_issue(key):
     return get_jira().issue(key)
 
 
-issue_mappings = dict(Rank=lambda issue: int(issue.fields().customfield_10700),
+issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),
                     Type=lambda issue: issue.fields().issuetype.name,
                     Key=lambda issue: issue.key,
                     Summary=lambda issue: issue.fields().summary,
@@ -102,10 +119,9 @@ issue_mappings = dict(Rank=lambda issue: int(issue.fields().customfield_10700),
                     Reporter=lambda issue: issue.fields().reporter.displayName,
                     Labels=lambda issue: issue.fields().labels,
                     Comments=lambda issue: issue.fields().comment.comments,
+                    AffectsVersions=lambda issue: [item.name for item in issue.fields().versions],
+                    FixVersions=lambda issue: [item.name for item in issue.fields().fixVersions],
+                    Components=lambda issue: [item.name for item in issue.fields().components],
+                    IssueLinks=lambda issue: issue.fields().issuelinks,
+                    SubTasks=lambda issue: issue.fields().subtasks,
                     )
-issue_mappings.update(**{
-                         'Affects Version/s': lambda issue: [item.name for item in issue.fields().versions],
-                         'Fix Version/s': lambda issue: [item.name for item in issue.fields().fixVersions],
-                         'Component/s': lambda issue: [item.name for item in issue.fields().components],
-                         'Issue Links': lambda issue: issue.fields().issueLinks,
-                      })

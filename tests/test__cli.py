@@ -22,10 +22,18 @@ class TestCase(unittest.TestCase):
 
     def test__modifying_options(self):
         key = jira_cli._jissue(["create", environ.get("TEST_PROJECT", "HOSTDEV"), "jissue test", "--issue-type=Task"])
+        target = jira_cli._jissue(["create", environ.get("TEST_PROJECT", "HOSTDEV"), "jissue test", "--issue-type=Task"])
         jira_cli._jissue(["show", key])
         jira_cli._jissue(["start", key])
         jira_cli._jissue(["comment", key, "this is a test"])
         jira_cli._jissue(["stop", key])
         jira_cli._jissue(["show", key])
+        jira_cli._jissue(["link", key, target])
+        jira_cli._jissue(["show", key])
+        jira_cli._jissue(["resolve", target, "this is a test"])
         jira_cli._jissue(["resolve", key, "this is a test"])
         jira_cli._jissue(["show", key])
+
+    def test_show__unicode(self):
+        jira_cli._jissue(["show", "HIP-555"])
+
