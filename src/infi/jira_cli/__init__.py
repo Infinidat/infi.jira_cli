@@ -11,6 +11,7 @@ Usage:
     jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
     jissue assign <issue> (<assignee> | --automatic | --to-no-one | --to-me)
+    jissue inventory <project>
     jissue config show
     jissue config set <fqdn> <username> <password>
 
@@ -31,6 +32,7 @@ More Information:
     jissue comment              add a comment to an existing issue
     jissue resolve              resolve an open issue as fixed
     jissue link                 link between two issues
+    jissue inventory            show project inventory
 """
 
 __import__("pkg_resources").declare_namespace(__name__)

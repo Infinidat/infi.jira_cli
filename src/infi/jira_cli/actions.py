@@ -174,6 +174,18 @@ def config_set(arguments):
     config.save()
 
 
+def inventory(arguments):
+    from .jira_adapter import get_jira
+    from string import capwords
+    from pprint import pprint
+    project_key = arguments.get("<project>").upper()
+    jira = get_jira()
+    component_names = [item.name for item in jira.project_components(project_key)]
+    unreleased_versions = [item.name for item in jira.project_versions(project_key) if not item.released]
+    resolution_names = [item.name for item in jira.resolutions()]
+    pprint({"Components": component_names, "Versions (unreleased)": unreleased_versions,
+            "Resolve types": resolution_names})
+
 def get_mappings():
     return dict(
         list=list_issues,
@@ -184,8 +196,9 @@ def get_mappings():
         comment=comment,
         resolve=resolve,
         link=link,
+        inventory=inventory,
         assign=assign,
-        config=dict(show=config_show, set=config_set)
+        config=dict(show=config_show, set=config_set),
     )
 
 
