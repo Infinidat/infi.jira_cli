@@ -3,6 +3,7 @@ infinidat jira issue command-line tool
 
 Usage:
     jissue list [--sort-by=<column-name>] [--reverse]
+    jissue search [--sort-by=<column-name>] [--reverse] <query>
     jissue start <issue>
     jissue stop <issue>
     jissue show <issue>
@@ -25,7 +26,8 @@ Options:
     --help                       show this screen
 
 More Information:
-    jissue list                 lists open issues assigned to selffg
+    jissue list                 lists open issues assigned to self
+    jissue search               search issues
     jissue start                start progress
     jissue stop                 stop progress
     jissue create               create a new issue
