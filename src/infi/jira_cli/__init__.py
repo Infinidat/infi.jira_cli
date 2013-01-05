@@ -49,12 +49,17 @@ def _get_arguments(argv):
 
 
 def _jissue(argv):
+    from jira.exceptions import JIRAError
     from .actions import choose_action
     arguments = _get_arguments(argv)
     action = choose_action(argv)
-    return action(arguments)
+    try:
+        return action(arguments)
+    except JIRAError, e:
+        print(e)
+        return 1
+
 
 def jissue():
     from sys import argv
-    _jissue(argv[1:])
-    return 0
+    return _jissue(argv[1:])
