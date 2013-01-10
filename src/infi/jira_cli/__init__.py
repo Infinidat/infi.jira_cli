@@ -3,6 +3,7 @@ infinidat jira issue command-line tool
 
 Usage:
     jissue list [--sort-by=<column-name>] [--reverse]
+    jissue search [--sort-by=<column-name>] [--reverse] <query>
     jissue start <issue>
     jissue stop <issue>
     jissue show <issue>
@@ -11,6 +12,7 @@ Usage:
     jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
     jissue assign <issue> (<assignee> | --automatic | --to-no-one | --to-me)
+    jissue inventory <project>
     jissue config show
     jissue config set <fqdn> <username> <password>
 
@@ -24,13 +26,15 @@ Options:
     --help                       show this screen
 
 More Information:
-    jissue list                 lists open issues assigned to selffg
+    jissue list                 lists open issues assigned to self
+    jissue search               search issues
     jissue start                start progress
     jissue stop                 stop progress
     jissue create               create a new issue
     jissue comment              add a comment to an existing issue
     jissue resolve              resolve an open issue as fixed
     jissue link                 link between two issues
+    jissue inventory            show project inventory
 """
 
 __import__("pkg_resources").declare_namespace(__name__)
@@ -45,12 +49,17 @@ def _get_arguments(argv):
 
 
 def _jissue(argv):
+    from jira.exceptions import JIRAError
     from .actions import choose_action
     arguments = _get_arguments(argv)
     action = choose_action(argv)
-    return action(arguments)
+    try:
+        return action(arguments)
+    except JIRAError, e:
+        print(e)
+        return 1
+
 
 def jissue():
     from sys import argv
-    _jissue(argv[1:])
-    return 0
+    return _jissue(argv[1:])

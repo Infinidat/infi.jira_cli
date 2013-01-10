@@ -99,6 +99,11 @@ def create_link(link_type_name, from_key, to_key, comment):
     jira.create_issue_link(**kwargs)
 
 
+def search_issues(query):
+    jira = get_jira()
+    return jira.search_issues(query, maxResults=100)
+
+
 @cached_function
 def get_issue(key):
     return get_jira().issue(key)

@@ -33,19 +33,29 @@ def format(value, slice=None):
     return unicode(value)[:slice]
 
 
-def list_issues(arguments):
-    from .jira_adapter import get_issues__assigned_to_me, from_jira_formatted_datetime, issue_mappings
+def _list_issues(arguments, issues):
+    from .jira_adapter import from_jira_formatted_datetime, issue_mappings
     columns = ["Rank", "Type", "Key", "Summary", "Status", "Created", "Updated"]
     FORMAT = "{:<8}{:<15}{:<20}{:<50}{:<15}{:<20}{:<20}"
     sortby_column = arguments.get("--sort-by").capitalize()
     reverse = arguments.get("--reverse")
     data = [{column: issue_mappings[column](issue) for column in columns}
-            for issue in get_issues__assigned_to_me()]
+            for issue in issues]
     sorted_data = sorted(data, key=lambda item: item[sortby_column], reverse=reverse)
 
     print(FORMAT.format(*columns))
     for item in sorted_data:
         print(FORMAT.format(*[format(item[column], 47) for column in columns]))
+
+
+def list_issues(arguments):
+    from .jira_adapter import get_issues__assigned_to_me
+    _list_issues(arguments, get_issues__assigned_to_me())
+
+
+def search(arguments):
+    from .jira_adapter import search_issues
+    return _list_issues(arguments, search_issues(arguments.get("<query>")))
 
 
 def start(arguments):
@@ -128,6 +138,7 @@ def resolve(arguments):
         comment(arguments)
     print("{0} resolved in version {1}".format(key, fix_version))
 
+
 def link(arguments):
     from .jira_adapter import create_link
     from string import capwords
@@ -174,6 +185,19 @@ def config_set(arguments):
     config.save()
 
 
+def inventory(arguments):
+    from .jira_adapter import get_jira
+    from string import capwords
+    from pprint import pprint
+    project_key = arguments.get("<project>").upper()
+    jira = get_jira()
+    component_names = [item.name for item in jira.project_components(project_key)]
+    unreleased_versions = [item.name for item in jira.project_versions(project_key) if not item.released]
+    resolution_names = [item.name for item in jira.resolutions()]
+    pprint({"Components": component_names, "Versions (unreleased)": unreleased_versions,
+            "Resolve types": resolution_names})
+
+
 def get_mappings():
     return dict(
         list=list_issues,
@@ -184,8 +208,10 @@ def get_mappings():
         comment=comment,
         resolve=resolve,
         link=link,
+        inventory=inventory,
         assign=assign,
-        config=dict(show=config_show, set=config_set)
+        search=search,
+        config=dict(show=config_show, set=config_set),
     )
 
 
