@@ -19,8 +19,10 @@ def get_issues__assigned_to_me():
     return get_jira().search_issues(ASSIGNED_TO_ME)
 
 
-def comment_on_issue(key, message):
-    get_jira().add_comment(issue=key, body=message)
+def add_labels_to_issue(key, labels):
+    issue = get_issue(key)
+    labels = set.union(set([unicode(label) for label in labels]), set(issue.fields().labels))
+    issue.update(labels=list(labels))
 
 
 def assign_issue(key, assignee):
@@ -106,7 +108,7 @@ def search_issues(query):
 
 @cached_function
 def get_issue(key):
-    return get_jira().issue(key)
+    return get_jira().issue(key.upper())
 
 
 issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),

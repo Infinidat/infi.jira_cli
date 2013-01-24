@@ -60,12 +60,12 @@ def search(arguments):
 
 def start(arguments):
     from .jira_adapter import start_progress
-    start_progress(arguments.get("<issue>").upper())
+    start_progress(arguments.get("<issue>"))
 
 
 def stop(arguments):
     from .jira_adapter import stop_progress
-    stop_progress(arguments.get("<issue>").upper())
+    stop_progress(arguments.get("<issue>"))
 
 
 def show(arguments):
@@ -98,14 +98,14 @@ def show(arguments):
                 "Created", "Updated", "Labels",
                 "Description", "Comments", "IssueLinks", "SubTasks"]
     from .jira_adapter import get_issue, issue_mappings
-    issue = get_issue(arguments.get("<issue>").upper())
+    issue = get_issue(arguments.get("<issue>"))
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
     print(dedent(template).format(**kwargs))
 
 
 def comment(arguments):
     from .jira_adapter import comment_on_issue
-    comment_on_issue(arguments.get("<issue>").upper(), arguments.get("<message>"))
+    comment_on_issue(arguments.get("<issue>"), arguments.get("<message>"))
 
 
 def _get_issue_key_and_message_from_commit(commit_string):
@@ -130,7 +130,7 @@ def resolve(arguments):
         key, message = _get_issue_key_and_message_from_commit(commit)
         arguments['<issue>'] = key
         arguments['<message>'] = message
-    key = arguments.get("<issue>").upper()
+    key = arguments.get("<issue>")
     fix_version = arguments.get("--fix-version") or get_next_release_name(key)
     resolution = capwords(arguments.get("--resolve-as"))
     resolve_issue(key, resolution, [fix_version])
@@ -142,14 +142,14 @@ def resolve(arguments):
 def link(arguments):
     from .jira_adapter import create_link
     from string import capwords
-    create_link(capwords(arguments.get("--link-type")), arguments.get("<issue>").upper(),
-                arguments.get("<target-issue>").upper(), arguments.get("<message>"))
+    create_link(capwords(arguments.get("--link-type")), arguments.get("<issue>"),
+                arguments.get("<target-issue>"), arguments.get("<message>"))
 
 
 def create(arguments):
     from .jira_adapter import create_issue
     from string import capwords
-    project_key = arguments.get("<project>").upper()
+    project_key = arguments.get("<project>")
     summary = arguments.get("<summary>")
     component_name = arguments.get("--component")
     issue_type_name = capwords(arguments.get("--issue-type"))
@@ -161,7 +161,7 @@ def create(arguments):
 def assign(arguments):
     from .jira_adapter import assign_issue
     from .config import Configuration
-    key = arguments.get("<issue>").upper()
+    key = arguments.get("<issue>")
     assignee = arguments.get("<assignee>") if arguments.get("<assignee>") else \
         "-1" if arguments.get("--automatic") else \
         Configuration.from_file().username if arguments.get("--to-me") else None  # --to-no-one
@@ -189,13 +189,18 @@ def inventory(arguments):
     from .jira_adapter import get_jira
     from string import capwords
     from pprint import pprint
-    project_key = arguments.get("<project>").upper()
+    project_key = arguments.get("<project>")
     jira = get_jira()
     component_names = [item.name for item in jira.project_components(project_key)]
     unreleased_versions = [item.name for item in jira.project_versions(project_key) if not item.released]
     resolution_names = [item.name for item in jira.resolutions()]
     pprint({"Components": component_names, "Versions (unreleased)": unreleased_versions,
             "Resolve types": resolution_names})
+
+
+def label(arguments):
+    from .jira_adapter import add_labels_to_issue
+    add_labels_to_issue(arguments.get("<issue>"), arguments.get("<label>"))
 
 
 def get_mappings():
@@ -211,6 +216,7 @@ def get_mappings():
         inventory=inventory,
         assign=assign,
         search=search,
+        label=label,
         config=dict(show=config_show, set=config_set),
     )
 

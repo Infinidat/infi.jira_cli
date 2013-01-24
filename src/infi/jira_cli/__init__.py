@@ -11,6 +11,7 @@ Usage:
     jissue comment <issue> <message>
     jissue resolve (<issue> [<message>] | --commit=<commit>) [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <issue> <target-issue> [<message>] [--link-type=<link-type>]
+    jissue label <issue> <label>...
     jissue assign <issue> (<assignee> | --automatic | --to-no-one | --to-me)
     jissue inventory <project>
     jissue config show
@@ -35,6 +36,7 @@ More Information:
     jissue resolve              resolve an open issue as fixed
     jissue link                 link between two issues
     jissue inventory            show project inventory
+    jissue label                add label
 """
 
 __import__("pkg_resources").declare_namespace(__name__)
