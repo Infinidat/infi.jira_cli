@@ -106,6 +106,10 @@ def search_issues(query):
     return jira.search_issues(query, maxResults=100)
 
 
+def comment_on_issue(key, message):
+    get_jira().add_comment(issue=key, body=message)
+
+
 @cached_function
 def get_issue(key):
     return get_jira().issue(key.upper())
