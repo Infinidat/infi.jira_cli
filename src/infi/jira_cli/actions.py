@@ -149,7 +149,7 @@ def link(arguments):
 def create(arguments):
     from .jira_adapter import create_issue
     from string import capwords
-    project_key = arguments.get("<project>")
+    project_key = arguments.get("<project>").upper()
     summary = arguments.get("<summary>")
     component_name = arguments.get("--component")
     issue_type_name = capwords(arguments.get("--issue-type"))
