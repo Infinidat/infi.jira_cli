@@ -1,8 +1,8 @@
 from infi.pyutils.lazy import cached_function
 from bunch import Bunch
 
-
-ASSIGNED_TO_ME = "assignee = currentUser() AND resolution = unresolved ORDER BY priority DESC, created ASC"
+CURRENT_USER = "currentUser()"
+ASSIGNED_ISSUES = "assignee = {} AND resolution = unresolved ORDER BY priority DESC, created ASC"
 
 
 @cached_function
@@ -15,8 +15,12 @@ def get_jira():
     return JIRA(options, basic_auth)
 
 
+def get_issues__assigned_to_user(user):
+    return get_jira().search_issues(ASSIGNED_ISSUES.format(user))
+
+
 def get_issues__assigned_to_me():
-    return get_jira().search_issues(ASSIGNED_TO_ME)
+    return get_issues__assigned_to_user(CURRENT_USER)
 
 
 def add_labels_to_issue(key, labels):
