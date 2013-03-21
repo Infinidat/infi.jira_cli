@@ -49,8 +49,10 @@ def _list_issues(arguments, issues):
 
 
 def list_issues(arguments):
-    from .jira_adapter import get_issues__assigned_to_me
-    _list_issues(arguments, get_issues__assigned_to_me())
+    from .jira_adapter import get_issues__assigned_to_me, get_issues__assigned_to_user
+    user = arguments.get("--assignee")
+    issues = get_issues__assigned_to_user(user) if user else get_issues__assigned_to_me()
+    _list_issues(arguments, issues)
 
 
 def search(arguments):
@@ -149,7 +151,7 @@ def link(arguments):
 def create(arguments):
     from .jira_adapter import create_issue
     from string import capwords
-    project_key = arguments.get("<project>")
+    project_key = arguments.get("<project>").upper()
     summary = arguments.get("<summary>")
     component_name = arguments.get("--component")
     issue_type_name = capwords(arguments.get("--issue-type"))

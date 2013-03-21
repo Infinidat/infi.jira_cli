@@ -2,7 +2,7 @@
 infinidat jira issue command-line tool
 
 Usage:
-    jissue list [--sort-by=<column-name>] [--reverse]
+    jissue list [--sort-by=<column-name>] [--reverse] [--assignee=<assignee>]
     jissue search [--sort-by=<column-name>] [--reverse] <query>
     jissue start <issue>
     jissue stop <issue>
@@ -23,11 +23,12 @@ Options:
     --issue-type=<issue-type>    issue type string [default: Bug]
     --link-type=<link-type>      link type string [default: Duplicate]
     --commit=<commit>            deduce issue and message from git commit
+    --assignee=<assignee>        jira user name
     --short                      print just the issue key, useful for scripting
     --help                       show this screen
 
 More Information:
-    jissue list                 lists open issues assigned to self
+    jissue list                 lists open issues assigned to self (or someone else)
     jissue search               search issues
     jissue start                start progress
     jissue stop                 stop progress
