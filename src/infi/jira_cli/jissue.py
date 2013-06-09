@@ -43,8 +43,7 @@ def _get_arguments(argv, environ):
     from bunch import Bunch
     project_default = "[default: {}]".format(environ["JISSUE_PROJECT"]) if "JISSUE_PROJECT" in environ else ""
     version_default = "[default: {}]".format(environ["JISSUE_VERSION"]) if "JISSUE_VERSION" in environ else ""
-    component_default = "[default: {}]".format(environ["JISSUE_COMPONENT"]) \
-                        if environ.get("JISSUE_COMPONENT") in environ else None
+    component_default = "[default: {}]".format(environ["JISSUE_COMPONENT"]) if "JISSUE_COMPONENT" in environ else ""
     issue_default = "[default: {}]".format(environ["JISSUE_ISSUE"]) if "JISSUE_ISSUE" in environ else ""
     doc_with_defaults = __doc__.format(project_default=project_default, version_default=version_default,
                                        component_default=component_default, issue_default=issue_default,

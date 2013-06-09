@@ -127,6 +127,14 @@ class CreateTestCase(unittest.TestCase):
         self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["Integration Tests"])
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
+    def test_component__jish(self):
+        fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
+        key = jissue(["create", "Bug", "this is a test"], dict(JISSUE_COMPONENT="Integration Tests",
+                                                               JISSUE_PROJECT="HOSTDEV"))
+        issue = jira_adapter.get_issue(key)
+        self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["Integration Tests"])
+        jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
+
     def test_version(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
         key = jissue(["create", "task", "this is a test", "--fix-version=0.16", "HOSTDEV"])
