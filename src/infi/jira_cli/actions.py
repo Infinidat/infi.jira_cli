@@ -76,6 +76,7 @@ def stop(arguments):
 
 def show(arguments):
     from textwrap import dedent
+    from string import printable
     template = u"""
     {Project} / {Key}
     {Summary}
@@ -106,7 +107,9 @@ def show(arguments):
     from .jira_adapter import get_issue, issue_mappings
     issue = get_issue(arguments.get("<issue>"))
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
-    print(dedent(template).format(**kwargs))
+    data = dedent(template).format(**kwargs)
+    data = ''.join([item for item in data if item in printable])
+    print(data)
 
 
 def comment(arguments):
