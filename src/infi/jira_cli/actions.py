@@ -140,7 +140,7 @@ def create(arguments):
     details = arguments.get("<details>")
     description = arguments.get("<description>")
     component_name = arguments.get("--component")
-    issue_type_name = capwords(arguments.get("--issue-type"))
+    issue_type_name = capwords(arguments.get("<issue-type>"))
     fix_version_name = arguments.get("--fix-version") or get_next_release_name_in_project(project_key)
     component_name = arguments.get("--component")
     issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details)

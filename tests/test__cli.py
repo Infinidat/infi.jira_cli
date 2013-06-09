@@ -99,37 +99,37 @@ class CreateTestCase(unittest.TestCase):
     def test_jish_and_short(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
         with mock_stdout() as stdout:
-            key = jissue(["create", "this is a test", "--short"], dict(JISSUE_PROJECT="HOSTDEV",
-                                                                       JISSUE_COMPONENT="jissue",
-                                                                       JISSUE_VERSION=fix_version))
+            key = jissue(["create", "bug", "this is a test", "--short"], dict(JISSUE_PROJECT="HOSTDEV",
+                                                                              JISSUE_COMPONENT="jissue",
+                                                                              JISSUE_VERSION=fix_version))
         self.assertEquals(key, stdout.getvalue().strip())
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_simple(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
         with mock_stdout() as stdout:
-            key = jissue(["create", "this is a test", "HOSTDEV"])
+            key = jissue(["create", "bug", "this is a test", "HOSTDEV"])
         self.assertIn(key, stdout.getvalue().strip())
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_description(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
         summary, description = "summary goes here", "description goes here"
-        key = jissue(["create", "{}\n{}".format(summary, description), "HOSTDEV"])
+        key = jissue(["create", "bug", "{}\n{}".format(summary, description), "HOSTDEV"])
         issue = jira_adapter.get_issue(key)
         self.assertEquals(description, issue.fields().description)
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_component(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
-        key = jissue(["create", "this is a test", "--component=Integration Tests", "HOSTDEV"])
+        key = jissue(["create", "Bug", "this is a test", "--component=Integration Tests", "HOSTDEV"])
         issue = jira_adapter.get_issue(key)
         self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["Integration Tests"])
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_version(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
-        key = jissue(["create", "this is a test", "--issue-type=Task", "--fix-version=0.16", "HOSTDEV"])
+        key = jissue(["create", "task", "this is a test", "--fix-version=0.16", "HOSTDEV"])
         issue = jira_adapter.get_issue(key)
         self.assertEquals(jira_adapter.issue_mappings['FixVersions'](issue), ["0.16"])
         self.assertEquals(jira_adapter.issue_mappings['Type'](issue), "Task")

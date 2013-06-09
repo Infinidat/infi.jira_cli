@@ -8,7 +8,7 @@ Usage:
     jissue stop {issue}
     jissue show {issue}
     jissue reopen {issue}
-    jissue create <details> {project} [--issue-type=<issue-type>] [--component=<component>] [--fix-version=<version>] [--short]
+    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short]
     jissue comment <message> {issue}
     jissue commit <message> {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]
@@ -25,7 +25,7 @@ Options:
     <details>                    multiline-string, first line is summary, other is description
     <link-type>                  link type string [default: Duplicate]
     <target-issue>               target issue
-    --issue-type=<issue-type>    issue type string [default: Bug]
+    <issue-type>                 issue type string
     --component=<component>      component name {component_default}
     --fix-version=<version>      version string {version_default}
     --file=<file>...             files/directories to commit
