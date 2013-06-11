@@ -71,7 +71,10 @@ def _jissue(argv, environ=dict()):
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         action = choose_action(argv)
         return action(arguments) or 0
-    except (SystemExit, JIRAError), e:
+    except SystemExit, e:
+        print >> stderr, e
+        return 0
+    except JIRAError, e:
         print >> stderr, e
     except ExecutionError, e:
         print >> stderr, e.result.get_stderr()
