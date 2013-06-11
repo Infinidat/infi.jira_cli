@@ -22,10 +22,10 @@ Starting from version 0.1, jissue ships with `jish`, which is a shell wrapper, s
 Here's a simple demonstration to show when this is useful:
 
     jish project MYPROJECT # by default, it uses the upcoming unreleased version, and 'unknown component'
-    jish create "this is a test" "this is an optional description"
-    jissue commit file-a file-b --mesage="this message will be appended to the ticket numeber"
+    jish create task "this is a test\nthis is the description"
+    jissue commit --file=file-a --file=file-b "this message will be appended to the ticket numeber"
     jissue comment "you can also just comment on the ticket without mentioning it explicitly"
-    jihs resolve  # this will deactivate
+    jissue resolve  # this will deactivate
 
 
 Installation Instructions
@@ -36,10 +36,14 @@ Install the package
     easy_install -U infi.jira_cli
 
 
-Install the shell wrapper and completion
+Install the shell wrapper and completion for yadr+zprezto setups:
 
     setup-jish unattended
 
+If using other setups:
+
+    setup-jish dump /tmp/x
+    cat /tmp/x >> ~/.zshrc
 
 Set-up your JIRA information
 
