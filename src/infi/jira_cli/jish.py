@@ -95,5 +95,4 @@ def _jish(argv):
 
 def main():
     from sys import argv
-    from os import environ
     return _jish(argv[1:])
