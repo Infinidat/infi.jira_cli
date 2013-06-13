@@ -70,7 +70,11 @@ def set_environment_variables(arguments, environment_variables):
 
 
 def _jish(argv):
-    arguments = _get_arguments(argv)
+    try:
+        arguments = _get_arguments(argv)
+    except SystemError, e:
+        print >> stderr, e
+        return 0
     environment_variables = dict()
     if arguments.deactivate:
         clear_environment_variables(environment_variables)
@@ -91,5 +95,4 @@ def _jish(argv):
 
 def main():
     from sys import argv
-    from os import environ
     return _jish(argv[1:])
