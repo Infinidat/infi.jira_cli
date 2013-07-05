@@ -69,10 +69,14 @@ def _jissue(argv, environ=dict()):
     from jira.exceptions import JIRAError
     from infi.execute import ExecutionError
     from .actions import choose_action
+    from docopt import DocoptExit
     try:
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         action = choose_action(argv)
         return action(arguments) or 0
+    except DocoptExit, e:
+        print >> stderr, e
+        return 1
     except SystemExit, e:
         print >> stderr, e
         return 0

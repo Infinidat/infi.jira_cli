@@ -188,7 +188,7 @@ class CommitTestCase(unittest.TestCase):
     def test_simple(self):
         with unstaged_files_context():
             execute_assert_success(["git", "add", "foo"])
-            self.assertEquals(jissue(["commit", "just a message", "HOSTDEV-000"]), 0)
+            self.assertEquals(jissue(["commit", "just a message", "HOSTDEV-955"]), 0)
             self.assertIn("just a message", execute_assert_success("git log", shell=True).get_stdout())
 
     def test_jish_and_file(self):
@@ -196,13 +196,13 @@ class CommitTestCase(unittest.TestCase):
             execute_assert_success(["git", "add", "foo"])
             with open("foo", "w"):
                 pass
-            self.assertEquals(jissue(["commit", "just a message", "--file=foo"], dict(JISSUE_ISSUE="HOSTDEV-000")), 0)
+            self.assertEquals(jissue(["commit", "just a message", "--file=foo"], dict(JISSUE_ISSUE="HOSTDEV-955")), 0)
             self.assertIn("just a message", execute_assert_success("git log", shell=True).get_stdout())
 
     def test_commit_fails(self):
         with unstaged_files_context():
             with mock_stderr() as stderr:
-                self.assertEquals(jissue(["commit", "just a message", "HOSTDEV-000"]), 1)
+                self.assertEquals(jissue(["commit", "just a message", "HOSTDEV-955"]), 1)
                 self.assertNotEquals(stderr.getvalue(), '')
 
 

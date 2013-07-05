@@ -111,8 +111,7 @@ def get_issue_pretty(key):
 
 
 def show(arguments):
-    key = get_issue(arguments.get("<issue>"))
-    print(get_issue_pretty(key))
+    print(get_issue_pretty(arguments.get("<issue>")))
 
 
 def comment(arguments):
