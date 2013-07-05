@@ -217,7 +217,7 @@ def commit(arguments):
     username = Configuration.from_file().username
     shame = '@{} why you no put commit message'.format(username)
     args += ["--message", "{} {}".format(key, message if message else shame),
-             "--message", data]
+             "--message", '='*80 + '\n' + data]
     if message:
         execute_assert_success(args)
     else:
