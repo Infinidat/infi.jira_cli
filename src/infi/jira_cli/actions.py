@@ -34,21 +34,15 @@ def format(value, slice=None):
 
 
 def _list_issues(arguments, issues):
+    from prettytable import PrettyTable
     from .jira_adapter import from_jira_formatted_datetime, issue_mappings
-    columns = ["Rank", "Type", "Key", "Summary", "Status", "Created", "Updated"]
-    FORMAT = "{:<8}{:<15}{:<20}{:<50}{:<15}{:<20}{:<20}"
+    table = PrettyTable(["Rank", "Type", "Key", "Summary", "Status", "Created", "Updated"])
+    table.align = 'l'
     sortby_column = arguments.get("--sort-by").capitalize()
     reverse = arguments.get("--reverse")
-    data = [{column: issue_mappings[column](issue) for column in columns}
-            for issue in issues]
-    sorted_data = sorted(data, key=lambda item: item[sortby_column], reverse=reverse)
-
-    print(FORMAT.format(*columns))
-    for item in sorted_data:
-        try:
-            print(FORMAT.format(*[format(item[column], 47) for column in columns]))
-        except UnicodeEncodeError:
-            pass
+    for issue in issues:
+        table.add_row([issue_mappings[column](issue) for column in table.field_names])
+    print(table.get_string(reversesort=reverse, sortby=sortby_column, align='l'))
 
 
 def list_issues(arguments):
