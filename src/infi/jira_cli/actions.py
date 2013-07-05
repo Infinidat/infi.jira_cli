@@ -74,7 +74,7 @@ def stop(arguments):
     stop_progress(arguments.get("<issue>"))
 
 
-def show(arguments):
+def get_issue_pretty(key):
     from textwrap import dedent
     from string import printable
     template = u"""
@@ -105,11 +105,16 @@ def show(arguments):
                 "Created", "Updated", "Labels",
                 "Description", "Comments", "IssueLinks", "SubTasks"]
     from .jira_adapter import get_issue, issue_mappings
-    issue = get_issue(arguments.get("<issue>"))
+    issue = get_issue(key)
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
     data = dedent(template).format(**kwargs)
     data = ''.join([item for item in data if item in printable])
-    print(data)
+    return data
+
+
+def show(arguments):
+    key = get_issue(arguments.get("<issue>"))
+    print(get_issue_pretty(key))
 
 
 def comment(arguments):
@@ -208,13 +213,11 @@ def commit(arguments):
     args = ["git", "commit"] + arguments.get("--file")
     message = arguments.get("<message>") or ''
     key = arguments.get("<issue>")
-    issue = get_issue(key)
-    summary = issue.fields().summary
-    description = issue.fields().description
+    data = get_issue_pretty(key)
     username = Configuration.from_file().username
-    args += ["--message", "{} @{} why do not put commit message".format(key, username),
-             "--message", "Summary:\n{}".format(summary),
-             "--message", "Description:\n{}".format(description)]
+    shame = '@{} why you no put commit message'.format(username)
+    args += ["--message", "{} {}".format(key, message if message else shame),
+             "--message", data]
     if message:
         execute_assert_success(args)
     else:
