@@ -54,8 +54,12 @@ def list_issues(arguments):
 
 
 def search(arguments):
-    from .jira_adapter import search_issues
-    return _list_issues(arguments, search_issues(arguments.get("<query>")))
+    from .jira_adapter import search_issues, get_query_by_filter
+    query = arguments.get("<query>")
+    _filter = arguments.get("--filter")
+    if _filter:
+        query = get_query_by_filter(_filter)
+    return _list_issues(arguments, search_issues(query))
 
 
 def start(arguments):
@@ -219,6 +223,16 @@ def commit(arguments):
         Popen(args, stdout=stdout, stderr=stderr, stdin=stdin).wait()
 
 
+def filters(arguments):
+    from .jira_adapter import get_jira
+    from prettytable import PrettyTable
+    table = PrettyTable(["name", "query"])
+    table.align = 'l'
+    for _filter in get_jira().favourite_filters():
+        table.add_row([_filter.name, _filter.jql])
+    print(table)
+
+
 def get_mappings():
     return dict(
         list=list_issues,
@@ -235,6 +249,7 @@ def get_mappings():
         label=label,
         commit=commit,
         reopen=reopen,
+        filters=filters,
         config=dict(show=config_show, set=config_set),
     )
 

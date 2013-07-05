@@ -96,25 +96,25 @@ def get_next_release_name_for_issue(key):
 def get_next_release_name_in_project(key):
     project = get_project(key)
     return sorted([version for version in project.versions if not version.released],
-                  key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))[0].name
+                   key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))[0].name
 
 
 def create_issue(project_key, issue_type_name, component_name, fix_version_name, details):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
-                    if matches(issue_type.name, issue_type_name)]
+                                    if matches(issue_type.name, issue_type_name)]
     components = [component for component in project.components
-                  if matches(component.name, component_name)]
+                                if matches(component.name, component_name)]
     versions = [version for version in project.versions
-                if matches(version.name, fix_version_name)]
+                            if matches(version.name, fix_version_name)]
     summary = details.split("\n", 1)[0]
     description = details.split("\n", 1)[1:]
     fields = dict(project=dict(id=str(project.id)),
-                  issuetype=dict(id=str(issue_type.id)),
-                  components=[dict(id=str(component.id)) for component in components],
-                  fixVersions=[dict(id=str(version.id)) for version in versions],
-                  summary=summary, description=description[0] if description else '')
+                                issuetype=dict(id=str(issue_type.id)),
+                                components=[dict(id=str(component.id)) for component in components],
+                                fixVersions=[dict(id=str(version.id)) for version in versions],
+                                summary=summary, description=description[0] if description else '')
     issue = jira.create_issue(fields=fields)
     return issue
 
@@ -122,7 +122,7 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
 def create_link(link_type_name, from_key, to_key):
     jira = get_jira()
     [link_type] = [link_type for link_type in jira.issue_link_types()
-                   if matches(link_type.name, link_type_name)]
+                                 if matches(link_type.name, link_type_name)]
 
     kwargs = dict(type=link_type.name, inwardIssue=from_key, outwardIssue=to_key)
     jira.create_issue_link(**kwargs)
@@ -143,8 +143,12 @@ def get_issue(key):
 
 
 @cached_function
-def get_project(key):
-    return get_jira().project(key.upper())
+def get_query_by_filter(name):
+    """:returns: the jql of the filter"""
+    for _filter in get_jira().favourite_filters():
+        if _filter.name == name:
+            return _filter.jql
+    raise JIRAError(404, "no such filter")
 
 
 issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),
