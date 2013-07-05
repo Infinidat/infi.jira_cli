@@ -49,7 +49,8 @@ def set_environment_variables_for_project(arguments, environment_variables):
         print >> stderr, "no such project", project_key
         raise SystemExit(1)
     next_version = jira_adapter.get_next_release_name_in_project(project_key)
-    project_version = arguments.get("<version>") or (environ.get("JISSUE_VERSION") if not arguments.project else '') \
+    project_version = arguments.get("<version>") if not arguments.project else next_version \
+                      or (environ.get("JISSUE_VERSION") if not arguments.project else '') \
                       or next_version
     if project_version not in [item.name for item in project.versions]:
         print >> stderr, "no such version", project_version
