@@ -10,6 +10,7 @@ Usage:
     jissue reopen {issue}
     jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short]
     jissue comment <message> {issue}
+    jissue commit {issue} [--file=<file>...]
     jissue commit <message> {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <link-type> <target-issue> {issue}

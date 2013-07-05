@@ -199,10 +199,27 @@ def reopen(arguments):
 
 
 def commit(arguments):
+    from .jira_adapter import get_issue
+    from .config import Configuration
     from infi.execute import execute_assert_success
+    from sys import stdin, stdout, stderr
+    from subprocess import Popen
+
     args = ["git", "commit"] + arguments.get("--file")
-    args += ["--message",  "{} {}".format(arguments.get("<issue>"), arguments.get("<message>"))]
-    execute_assert_success(args)
+    message = arguments.get("<message>") or ''
+    key = arguments.get("<issue>")
+    issue = get_issue(key)
+    summary = issue.fields().summary
+    description = issue.fields().description
+    username = Configuration.from_file().username
+    args += ["--message", "{} @{} why do not put commit message".format(key, username),
+             "--message", "Summary:\n{}".format(summary),
+             "--message", "Description:\n{}".format(description)]
+    if message:
+        execute_assert_success(args)
+    else:
+        args += ["--edit"]
+        Popen(args, stdout=stdout, stderr=stderr, stdin=stdin).wait()
 
 
 def get_mappings():
