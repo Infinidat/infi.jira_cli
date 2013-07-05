@@ -3,19 +3,20 @@ infinidat jira issue command-line tool
 
 Usage:
     jissue list {project} [--sort-by=<column-name>] [--reverse] [--assignee=<assignee>]
-    jissue search [--sort-by=<column-name>] [--reverse] <query>
+    jissue search [--sort-by=<column-name>] [--reverse] (--filter=<filter> | <query>)
     jissue start {issue}
     jissue stop {issue}
     jissue show {issue}
     jissue reopen {issue}
     jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short]
     jissue comment <message> {issue}
-    jissue commit <message> {issue} [--file=<file>...]
+    jissue commit [<message>] {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]
     jissue link <link-type> <target-issue> {issue}
     jissue label {issue} --label=<label>...
     jissue assign {issue} (--assignee=<assignee> | --automatic | --to-no-one | --to-me)
     jissue inventory {project}
+    jissue filters
     jissue config show
     jissue config set <fqdn> <username> <password>
 
@@ -32,6 +33,7 @@ Options:
     --resolve-as=<resolution>    resolution string [default: Fixed]
     --sort-by=<column-name>      column to sort by [default: Rank]
     --assignee=<assignee>        jira user name
+    --filter=<filter>            name of a favorite filter
     --short                      print just the issue key, useful for scripting
     --help                       show this screen
 """
@@ -67,10 +69,14 @@ def _jissue(argv, environ=dict()):
     from jira.exceptions import JIRAError
     from infi.execute import ExecutionError
     from .actions import choose_action
+    from docopt import DocoptExit
     try:
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         action = choose_action(argv)
         return action(arguments) or 0
+    except DocoptExit, e:
+        print >> stderr, e
+        return 1
     except SystemExit, e:
         print >> stderr, e
         return 0

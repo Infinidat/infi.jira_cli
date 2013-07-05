@@ -34,21 +34,15 @@ def format(value, slice=None):
 
 
 def _list_issues(arguments, issues):
+    from prettytable import PrettyTable
     from .jira_adapter import from_jira_formatted_datetime, issue_mappings
-    columns = ["Rank", "Type", "Key", "Summary", "Status", "Created", "Updated"]
-    FORMAT = "{:<8}{:<15}{:<20}{:<50}{:<15}{:<20}{:<20}"
+    table = PrettyTable(["Rank", "Type", "Key", "Summary", "Status", "Created", "Updated"])
+    table.align = 'l'
     sortby_column = arguments.get("--sort-by").capitalize()
     reverse = arguments.get("--reverse")
-    data = [{column: issue_mappings[column](issue) for column in columns}
-            for issue in issues]
-    sorted_data = sorted(data, key=lambda item: item[sortby_column], reverse=reverse)
-
-    print(FORMAT.format(*columns))
-    for item in sorted_data:
-        try:
-            print(FORMAT.format(*[format(item[column], 47) for column in columns]))
-        except UnicodeEncodeError:
-            pass
+    for issue in issues:
+        table.add_row([issue_mappings[column](issue) for column in table.field_names])
+    print(table.get_string(reversesort=reverse, sortby=sortby_column, align='l'))
 
 
 def list_issues(arguments):
@@ -60,8 +54,12 @@ def list_issues(arguments):
 
 
 def search(arguments):
-    from .jira_adapter import search_issues
-    return _list_issues(arguments, search_issues(arguments.get("<query>")))
+    from .jira_adapter import search_issues, get_query_by_filter
+    query = arguments.get("<query>")
+    _filter = arguments.get("--filter")
+    if _filter:
+        query = get_query_by_filter(_filter)
+    return _list_issues(arguments, search_issues(query))
 
 
 def start(arguments):
@@ -74,7 +72,7 @@ def stop(arguments):
     stop_progress(arguments.get("<issue>"))
 
 
-def show(arguments):
+def get_issue_pretty(key):
     from textwrap import dedent
     from string import printable
     template = u"""
@@ -105,11 +103,15 @@ def show(arguments):
                 "Created", "Updated", "Labels",
                 "Description", "Comments", "IssueLinks", "SubTasks"]
     from .jira_adapter import get_issue, issue_mappings
-    issue = get_issue(arguments.get("<issue>"))
+    issue = get_issue(key)
     kwargs = {item: format(issue_mappings[item](issue)) for item in keywords}
     data = dedent(template).format(**kwargs)
     data = ''.join([item for item in data if item in printable])
-    print(data)
+    return data
+
+
+def show(arguments):
+    print(get_issue_pretty(arguments.get("<issue>")))
 
 
 def comment(arguments):
@@ -199,10 +201,35 @@ def reopen(arguments):
 
 
 def commit(arguments):
+    from .jira_adapter import get_issue
+    from .config import Configuration
     from infi.execute import execute_assert_success
+    from sys import stdin, stdout, stderr
+    from subprocess import Popen
+
     args = ["git", "commit"] + arguments.get("--file")
-    args += ["--message",  "{} {}".format(arguments.get("<issue>"), arguments.get("<message>"))]
-    execute_assert_success(args)
+    message = arguments.get("<message>") or ''
+    key = arguments.get("<issue>")
+    data = get_issue_pretty(key)
+    username = Configuration.from_file().username
+    shame = '@{} why you no put commit message'.format(username)
+    args += ["--message", "{} {}".format(key, message if message else shame),
+             "--message", '='*80 + '\n' + data]
+    if message:
+        execute_assert_success(args)
+    else:
+        args += ["--edit"]
+        Popen(args, stdout=stdout, stderr=stderr, stdin=stdin).wait()
+
+
+def filters(arguments):
+    from .jira_adapter import get_jira
+    from prettytable import PrettyTable
+    table = PrettyTable(["name", "query"])
+    table.align = 'l'
+    for _filter in get_jira().favourite_filters():
+        table.add_row([_filter.name, _filter.jql])
+    print(table)
 
 
 def get_mappings():
@@ -221,6 +248,7 @@ def get_mappings():
         label=label,
         commit=commit,
         reopen=reopen,
+        filters=filters,
         config=dict(show=config_show, set=config_set),
     )
 
