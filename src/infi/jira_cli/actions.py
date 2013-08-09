@@ -173,7 +173,9 @@ def config_set(arguments):
 
     values = {item: getattr(arguments, "<{0}>".format(item))
               for item in ['fqdn', 'username', 'password']}
-    config = Configuration(**values)
+    config = Configuration()
+    for key, value in values.iteritems():
+        setattr(config, key, value)
     config.save()
 
 
