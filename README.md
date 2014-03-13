@@ -53,12 +53,9 @@ Set-up your JIRA information
 Checking out the code
 =====================
 
-You must install the dependencies first:
+Run the following:
 
     easy_install -U infi.projector
-
-and then, run:
-
     projector devenv build
 
 

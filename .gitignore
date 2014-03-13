@@ -54,3 +54,6 @@ buildout.in
 
 src/infi/jira_cli/__version__.py
 bootstrap.py
+.cache
+eggs
+parts
