@@ -19,8 +19,8 @@ from os import environ
 def _get_arguments(argv):
     from .__version__ import __version__
     from docopt import docopt
-    from bunch import Bunch
-    arguments = Bunch(docopt(__doc__, argv=argv, help=True, version=__version__))
+    from munch import Munch
+    arguments = Munch(docopt(__doc__, argv=argv, help=True, version=__version__))
     return arguments
 
 

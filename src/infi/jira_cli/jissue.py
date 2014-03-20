@@ -42,7 +42,7 @@ Options:
 def _get_arguments(argv, environ):
     from .__version__ import __version__
     from docopt import docopt
-    from bunch import Bunch
+    from munch import Munch
     project_default = "[default: {}]".format(environ["JISSUE_PROJECT"]) if "JISSUE_PROJECT" in environ else ""
     version_default = "[default: {}]".format(environ["JISSUE_VERSION"]) if "JISSUE_VERSION" in environ else ""
     component_default = "[default: {}]".format(environ["JISSUE_COMPONENT"]) if "JISSUE_COMPONENT" in environ else ""
@@ -51,7 +51,7 @@ def _get_arguments(argv, environ):
                                        component_default=component_default, issue_default=issue_default,
                                        issue="[<issue>]" if issue_default else "<issue>",
                                        project="[<project>]" if project_default else "<project>")
-    arguments = Bunch(docopt(doc_with_defaults, argv=argv, help=True, version=__version__))
+    arguments = Munch(docopt(doc_with_defaults, argv=argv, help=True, version=__version__))
     if environ.get("JISSUE_PROJECT") and not arguments.get("<project>"):
         arguments["<project>"] = environ["JISSUE_PROJECT"]
     if environ.get("JISSUE_VERSION") and not arguments.get("--fix-version"):

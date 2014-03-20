@@ -1,6 +1,6 @@
 from infi.pyutils.lazy import cached_function
 from jira.exceptions import JIRAError
-from bunch import Bunch
+from munch import Munch
 CURRENT_USER = "currentUser()"
 ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority DESC, created ASC"
 
@@ -151,7 +151,7 @@ def get_query_by_filter(name):
     raise JIRAError(404, "no such filter")
 
 
-issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),
+issue_mappings = Munch(Rank=lambda issue: int(issue.fields().customfield_10700),
                        Type=lambda issue: issue.fields().issuetype.name,
                        Key=lambda issue: issue.key,
                        Summary=lambda issue: issue.fields().summary,
@@ -159,7 +159,7 @@ issue_mappings = Bunch(Rank=lambda issue: int(issue.fields().customfield_10700),
                        Priority=lambda issue: issue.fields().priority.name,
                        Project=lambda issue: issue.fields().project.name,
                        Status=lambda issue: issue.fields().status.name,
-                       Resolution=lambda issue: (issue.fields().resolution or Bunch(name="Unresolved")).name,
+                       Resolution=lambda issue: (issue.fields().resolution or Munch(name="Unresolved")).name,
                        Created=lambda issue: from_jira_formatted_datetime(issue.fields().created),
                        Updated=lambda issue: from_jira_formatted_datetime(issue.fields().updated),
                        Assignee=lambda issue: issue.fields().assignee.displayName,
