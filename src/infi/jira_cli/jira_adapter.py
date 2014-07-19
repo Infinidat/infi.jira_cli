@@ -46,6 +46,10 @@ def from_jira_formatted_date(formatted_string):
     return from_jira_formatted_datetime(formatted_string+'T00:00:00.000+0000')
 
 
+def to_jira_formatted_date(datetime_object):
+    return datetime_object.strftime("%Y-%m-%d")
+
+
 def matches(str_a, str_b):
     return str_a is not None and str_b is not None and str_a.lower() == str_b.lower()
 
@@ -82,6 +86,12 @@ def reopen(key):
 @cached_function
 def get_project(key):
     return get_jira().project(key.upper())
+
+
+@cached_function
+def get_version(key, name):
+    [version] = [version for version in get_project(key).versions if version.name == name]
+    return version
 
 
 @cached_function

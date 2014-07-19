@@ -36,14 +36,12 @@ Install the package
     easy_install -U infi.jira_cli
 
 
-Install the shell wrapper and completion for yadr+zprezto setups:
+Add the following shell command to your zsh/bash setup:
 
-    setup-jish unattended
+    jish () {
+        eval $(POSIXLY_CORRECT= <full-path-to-jish> "$@")
+    }
 
-If using other setups:
-
-    setup-jish dump /tmp/x
-    cat /tmp/x >> ~/.zshrc
 
 Set-up your JIRA information
 
