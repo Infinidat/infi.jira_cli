@@ -62,6 +62,7 @@ def merge_releases(project_name, project_version, target_version):
 def parse_deltastring(string):
     from datetime import timedelta
     from argparse import ArgumentTypeError
+    DELTA_KEYWORD_ARGUMENTS = dict(w="weeks", d="days")
     keyword_argument = DELTA_KEYWORD_ARGUMENTS.get(string[-1] if string else "", "seconds")
     stripped_string = string.strip(''.join(DELTA_KEYWORD_ARGUMENTS.keys()))
     try:
@@ -78,7 +79,9 @@ def delay_release(project_name, project_version, delta):
 
 
 def reschedule_release(project_name, project_version, release_date):
-    raise NotImplementedError()
+    from .jira_adapter import get_version, to_jira_formatted_date, from_jira_formatted_date
+    version = get_version(project_name, project_version)
+    version.update(releaseDate=release_date if release_date else None)
 
 
 def create_new_release(project_name, project_version, release_date):
