@@ -56,7 +56,10 @@ def release_version(project_name, project_version, move_to_next_version, move_to
 
 
 def merge_releases(project_name, project_version, target_version):
-    raise NotImplementedError()
+    from .jira_adapter import get_version
+    version = get_version(project_name, project_version)
+    target_version = get_version(project_name, target_version)
+    version.delete(target_version.id, target_version.id)
 
 
 def parse_deltastring(string):
