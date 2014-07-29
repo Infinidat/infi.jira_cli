@@ -3,19 +3,20 @@ infinidat jira project command-line tool
 
 Usage:
     jirelease list {project}
-    jirelease release {project} {version} [--move-unresolved-issues-to-next-version | --move-unresolved-issues-to-specific-version=<next-version>]
+    jirelease release {project} {version}
     jirelease merge {project} {version} <target-version>
     jirelease delay {project} {version} <delta>
     jirelease reschedule {project} {version} <date>
-    jirelease create {project} {version} <date>
-    jirelease move {project} {version} <direction> <count>
-    jirelease reorganize {project} {version}
-    jirelease archive <project> <version-regex>
-    jirelease unarchive <project> <version-regex>
+    jirelease create {project} <target-version> [<delta>] [<description>]
+    jirelease move {project} {version} (before | after) <target-version>
+    jirelease archive {project} <version-regex>
+    jirelease unarchive {project} <version-regex>
+    jirelease rename {project} {version} <name>
+    jirelease describe {project} {version} <description>
 
 Options:
-    <project>                    project key {project_default}
-    <version>                    version string {version_default}
+    --project=PROJECT                    project key {project_default}
+    --release=RELEASE                    version string {version_default}
 
 """
 
@@ -27,13 +28,13 @@ def _get_arguments(argv, environ):
     project_default = "[default: {}]".format(environ["JISSUE_PROJECT"]) if "JISSUE_PROJECT" in environ else ""
     version_default = "[default: {}]".format(environ["JISSUE_VERSION"]) if "JISSUE_VERSION" in environ else ""
     doc_with_defaults = __doc__.format(project_default=project_default, version_default=version_default,
-                                       project="[<project>]" if project_default else "<project>",
-                                       version="[<version>]" if version_default else "<version>")
+                                       project="[--project=PROJECT]" if project_default else "--project=PROEJCT",
+                                       version="[--release=RELEASE]" if version_default else "--release=RELEASE")
     arguments = Munch(docopt(doc_with_defaults, argv=argv, help=True, version=__version__))
-    if environ.get("JISSUE_PROJECT") and not arguments.get("<project>"):
-        arguments["<project>"] = environ["JISSUE_PROJECT"]
-    if environ.get("JISSUE_VERSION") and not arguments.get("--fix-version"):
-        arguments["--fix-version"] = environ["JISSUE_VERSION"]
+    if environ.get("JISSUE_PROJECT") and not arguments.get("--project"):
+        arguments["--project"] = environ["JISSUE_PROJECT"]
+    if environ.get("JISSUE_VERSION") and not arguments.get("--release"):
+        arguments["--release"] = environ["JISSUE_VERSION"]
     return arguments
 
 
@@ -47,12 +48,24 @@ def pretty_print_project_versions_in_order(project_name):
     for version in reversed(project.versions):
         if version.archived:
             continue
-        table.add_row([version.name, getattr(version, 'description', ''), getattr(version, 'releaseDate', '')])
+        table.add_row([version.name if version.released else version.name + ' **' if getattr(version, 'overdue', False) else version.name + ' *',
+                       getattr(version, 'description', ''), getattr(version, 'releaseDate', '')])
     print(table.get_string())
 
 
-def release_version(project_name, project_version, move_to_next_version, move_to_specific_version):
-    raise NotImplementedError()
+def release_version(project_name, project_version):
+    from .jira_adapter import get_version, to_jira_formatted_date
+    from json import loads
+    from datetime import datetime
+    version = get_version(project_name, project_version)
+    if version.released:
+        raise AssertionError("version already released")
+    unresolved_issue_count = loads(version._session.get(version.self + '/unresolvedIssueCount').text).values()[-1]
+    if unresolved_issue_count:
+        raise AssertionError("version has {} unresovled issues".format(unresolved_issue_count))
+    if not version.releaseDate:
+        version.update(releaseDate=to_jira_formatted_date(datetime.today()))
+    version.update(released=True)
 
 
 def merge_releases(project_name, project_version, target_version):
@@ -87,16 +100,36 @@ def reschedule_release(project_name, project_version, release_date):
     version.update(releaseDate=release_date if release_date else None)
 
 
-def create_new_release(project_name, project_version, release_date):
-    raise NotImplementedError()
+def create_new_release(project_name, target_version, delta, description):
+    from .jira_adapter import clear_cache, get_jira, get_project, from_jira_formatted_date, to_jira_formatted_date
+    from pkg_resources import parse_version
+    project = get_project(project_name)
+    sorted_versions = sorted(project.versions, key=lambda version: parse_version(version.name))
+    previous_version = sorted_versions[0]
+    for item in sorted_versions:
+        if parse_version(item.name) > parse_version(target_version):
+            break
+        previous_version = item
+    if delta and not hasattr(previous_version, 'releaseDate'):
+        raise AssertionError("previous version {} has no release date".format(previous_version.name))
+    release_date = to_jira_formatted_date(from_jira_formatted_date(previous_version.releaseDate) + parse_deltastring(delta))
+    get_jira().create_version(target_version, project, releaseDate=release_date, description=description)
+    clear_cache(get_project)
+    move_release(project_name, target_version, after=True, target_version=previous_version.name)
 
 
-def move_release(project_name, project_version, shift):
-    raise NotImplementedError()
-
-
-def reorganize_project(project_name, specific_versions):
-    raise NotImplementedError()
+def move_release(project_name, project_version, after, target_version):
+    from .jira_adapter import get_version, get_project, JIRAError
+    from json import dumps
+    project = get_project(project_name)
+    version = get_version(project_name, project_version)
+    target_version = get_version(project_name, target_version)
+    if not after: # before
+        target_version = project.versions[project.versions.index(target_version)-1]
+    url = version.self + '/move'
+    response = version._session.post(url, headers={'content-type': 'application/json'}, data=dumps(dict(after=target_version.self)))
+    if response.status_code != 200:
+        raise JIRAError(url=url, status_code=response.status_code, text=response.reason)
 
 
 def set_archive(project_name, project_version_regex, archived):
@@ -107,34 +140,43 @@ def set_archive(project_name, project_version_regex, archived):
             version.update(archived=archived)
 
 
+def set_name(project_name, project_version, name):
+    from .jira_adapter import get_version
+    version = get_version(project_name, project_version)
+    version.update(name=name)
+
+
+def set_description(project_name, project_version, description):
+    from .jira_adapter import get_version
+    version = get_version(project_name, project_version)
+    version.update(description=description)
+
+
 def do_work(arguments):
-    project_name = arguments['<project>']
-    project_version = arguments.get('<version>')
+    project_name = arguments['--project']
+    project_version = arguments.get('--release')
     if arguments['list']:
         pretty_print_project_versions_in_order(project_name)
     elif arguments['release']:
-        release_version(project_name, project_version,
-                        arguments.get('--move-unresolved-issues-to-next-version'),
-                        arguments.get('--move-unresolved-issues-to-specific-version'))
+        release_version(project_name, project_version)
     elif arguments['merge']:
         merge_releases(project_name, project_version, arguments['<target-version>'])
     elif arguments['delay']:
-        delay_release(project_name, project_version, delta=arguments['<delta>'])
+        delay_release(project_name, project_version, arguments['<delta>'])
     elif arguments['reschedule']:
-        reschedule_release(project_name, project_version, release_date=arguments['<date>'])
+        reschedule_release(project_name, project_version, arguments['<date>'])
     elif arguments['create']:
-        create_new_release(project_name, project_version, release_date=arguments['<date>'])
+        create_new_release(project_name, arguments['<target-version>'], arguments['<delta>'], arguments['<description>'])
     elif arguments['move']:
-        direction = arguments['<direction>']
-        count = int(arguments['count'])
-        assert direction in ('up', 'down')
-        move_release(project_name, project_version, count if direction == 'up' else -1*count)
-    elif arguments['reorganize']:
-        reorganize_project(project_name, specific_versions=[project_version] if project_version else [])
+        move_release(project_name, project_version, arguments.get('after'), arguments['<target-version>'])
     elif arguments['archive']:
         set_archive(project_name, arguments['<version-regex>'], True)
     elif arguments['unarchive']:
         set_archive(project_name, arguments['<version-regex>'], False)
+    elif arguments['rename']:
+        set_name(project_name, project_version, arguments['<name>'])
+    elif arguments['describe']:
+        set_description(project_name, project_version, arguments['<description>'])
 
 
 def _jiject(argv, environ):
@@ -148,6 +190,9 @@ def _jiject(argv, environ):
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         return do_work(arguments)
     except DocoptExit, e:
+        print >> stderr, e
+        return 1
+    except AssertionError, e:
         print >> stderr, e
         return 1
     except SystemExit, e:

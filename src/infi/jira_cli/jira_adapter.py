@@ -1,4 +1,4 @@
-from infi.pyutils.lazy import cached_function
+from infi.pyutils.lazy import cached_function, clear_cache
 from jira.exceptions import JIRAError
 from munch import Munch
 CURRENT_USER = "currentUser()"
