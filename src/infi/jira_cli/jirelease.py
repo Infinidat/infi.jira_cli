@@ -23,7 +23,7 @@ Options:
     create                               create a new release
     move                                 move a release up or down
     archive                              mark version as archived
-    unarchive                              mark version as unarchived
+    unarchive                            mark version as unarchived
     rename                               change name
     describe                             change description
     --project=PROJECT                    project key {project_default}
