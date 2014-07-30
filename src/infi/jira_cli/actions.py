@@ -162,10 +162,7 @@ def assign(arguments):
 
 def config_show(arguments):
     from .config import Configuration
-    try:
-        print(Configuration.from_file().to_json(indent=True))
-    except IOError:
-        print("Configuration file does not exist")
+    print(Configuration.from_file().to_json(indent=True))
 
 
 def config_set(arguments):
