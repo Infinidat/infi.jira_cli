@@ -21,6 +21,21 @@ Usage:
     jissue config set <fqdn> <username> <password>
 
 Options:
+    list                         list open issues in project/version
+    search                       search for issues
+    start                        mark work started on issue
+    stop                         mark work stopped on issue
+    show                         pretty-print issue details
+    reopen                       re-open issue
+    create                       create new issue
+    comment                      add comment to issue
+    commit                       do a Git commit with the issue details in the commit message
+    resolve                      mark issue as resolved
+    link                         create link between issues
+    label                        add labels to issue
+    assign                       assign issue to user
+    inventory                    list components, versions, transisions in project
+    filters                      list issue search filters
     <project>                    project key {project_default}
     <issue>                      issue key {issue_default}
     <details>                    multiline-string, first line is summary, other is description
