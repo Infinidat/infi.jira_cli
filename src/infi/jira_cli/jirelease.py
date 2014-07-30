@@ -15,6 +15,16 @@ Usage:
     jirelease describe {project} {version} <description>
 
 Options:
+    list                                 list unarchives releases
+    release                              mark version as released
+    merge                                move issues to target version and delete the merged one
+    delay                                move the release date
+    reschedule                           set a new release date
+    create                               create a new release
+    move                                 move a release up or down
+    archive                              mark version as archived
+    rename                               change name
+    describe                             change description
     --project=PROJECT                    project key {project_default}
     --release=RELEASE                    version string {version_default}
 

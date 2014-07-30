@@ -1,6 +1,6 @@
 """jish
 Usage:
-    jish project <project> [<component> [<version>]]
+    jish project <project> [<component> [<version> | --no-version]]
     jish component <component>
     jish version <version>
     jish workon <issue>
@@ -59,7 +59,9 @@ def set_environment_variables_for_project(arguments, environment_variables):
     if project_component not in [item.name for item in project.components] + [None, '']:
         print >> stderr, "no such component", project_component
         raise SystemExit(1)
-    environment_variables.update(JISSUE_PROJECT=project_key.upper(), JISSUE_VERSION=project_version)
+    environment_variables.update(JISSUE_PROJECT=project_key.upper())
+    if not arguments.get("--no-version"):
+        environment_variables.update(JISSUE_VERSION=project_version)
     if project_component:
         environment_variables.update(JISSUE_COMPONENT=project_component)
 
