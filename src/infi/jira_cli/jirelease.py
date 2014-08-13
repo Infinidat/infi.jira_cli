@@ -23,6 +23,7 @@ Options:
     create                               create a new release
     move                                 move a release up or down
     archive                              mark version as archived
+    unarchive                            mark version as unarchived
     rename                               change name
     describe                             change description
     --project=PROJECT                    project key {project_default}
@@ -122,7 +123,10 @@ def create_new_release(project_name, target_version, delta, description):
         previous_version = item
     if delta and not hasattr(previous_version, 'releaseDate'):
         raise AssertionError("previous version {} has no release date".format(previous_version.name))
-    release_date = to_jira_formatted_date(from_jira_formatted_date(previous_version.releaseDate) + parse_deltastring(delta))
+    if delta:
+        release_date = to_jira_formatted_date(from_jira_formatted_date(previous_version.releaseDate) + parse_deltastring(delta))
+    else:
+        release_date = None
     get_jira().create_version(target_version, project, releaseDate=release_date, description=description)
     clear_cache(get_project)
     move_release(project_name, target_version, after=True, target_version=previous_version.name)

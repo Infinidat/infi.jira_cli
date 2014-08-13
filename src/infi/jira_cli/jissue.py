@@ -8,7 +8,7 @@ Usage:
     jissue stop {issue}
     jissue show {issue}
     jissue reopen {issue}
-    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short]
+    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short] [--assign-to-me]
     jissue comment <message> {issue}
     jissue commit [<message>] {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]
@@ -36,6 +36,7 @@ Options:
     assign                       assign issue to user
     inventory                    list components, versions, transisions in project
     filters                      list issue search filters
+    config                       get/set jira configuration
     <project>                    project key {project_default}
     <issue>                      issue key {issue_default}
     <details>                    multiline-string, first line is summary, other is description
@@ -84,21 +85,24 @@ def _jissue(argv, environ=dict()):
     from jira.exceptions import JIRAError
     from infi.execute import ExecutionError
     from .actions import choose_action
+    from .config import ConfigurationError
     from docopt import DocoptExit
     try:
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         action = choose_action(argv)
         return action(arguments) or 0
-    except DocoptExit, e:
+    except DocoptExit as e:
         print >> stderr, e
         return 1
-    except SystemExit, e:
+    except SystemExit as e:
         print >> stderr, e
         return 0
-    except JIRAError, e:
+    except JIRAError as e:
         print >> stderr, e
-    except ExecutionError, e:
+    except ExecutionError as e:
         print >> stderr, e.result.get_stderr()
+    except ConfigurationError as e:
+        print >> stderr, e.message
     return 1
 
 

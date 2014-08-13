@@ -5,6 +5,10 @@ from os import path
 CONFIGFILE_PATH = path.expanduser(path.join("~", ".jissue"))
 
 
+class ConfigurationError(Exception):
+    pass
+
+
 class Configuration(Model):
     fqdn = StringType(required=True)
     username = StringType(required=True)
@@ -13,6 +17,8 @@ class Configuration(Model):
     @classmethod
     def from_file(cls, filepath=None):
         from json import load
+        if not path.exists(CONFIGFILE_PATH):
+            raise ConfigurationError("Configuration file does not exist, run 'jissue config set'")
         filepath = filepath or CONFIGFILE_PATH
         with open(filepath) as fd:
             data = load(fd)

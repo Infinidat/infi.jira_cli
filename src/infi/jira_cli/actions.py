@@ -136,6 +136,7 @@ def link(arguments):
 
 
 def create(arguments):
+    from .config import Configuration
     from .jira_adapter import create_issue, get_next_release_name_in_project
     from string import capwords
     project_key = arguments.get("<project>").upper()
@@ -145,7 +146,8 @@ def create(arguments):
     issue_type_name = capwords(arguments.get("<issue-type>"))
     fix_version_name = arguments.get("--fix-version") or get_next_release_name_in_project(project_key)
     component_name = arguments.get("--component")
-    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details)
+    assignee = Configuration.from_file().username if arguments.get("--assign-to-me") else "-1"
+    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee)
     print(issue.key) if arguments.get("--short") else show({"<issue>": issue.key})
     return issue.key
 
@@ -162,10 +164,7 @@ def assign(arguments):
 
 def config_show(arguments):
     from .config import Configuration
-    try:
-        print(Configuration.from_file().to_json(indent=True))
-    except IOError:
-        print("Configuration file does not exist")
+    print(Configuration.from_file().to_json(indent=True))
 
 
 def config_set(arguments):
