@@ -92,6 +92,8 @@ def _jish(argv):
         if arguments.get("--assign-to-me"):
             from .config import Configuration
             args = args + (Configuration.from_file().username, )
+        else:
+            args = args + (None, )
         arguments.workon = True
         arguments['<issue>'] = jira_adapter.create_issue(*args).key
         set_environment_variables(arguments, environment_variables)
