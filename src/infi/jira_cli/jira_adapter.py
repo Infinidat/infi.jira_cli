@@ -83,6 +83,11 @@ def reopen(key):
     transition_issue(key, "Reopen Issue", dict())
 
 
+def iter_projects():
+    for item in get_jira().projects():
+      yield get_project(item.key)
+
+
 @cached_function
 def get_project(key):
     return get_jira().project(key.upper())

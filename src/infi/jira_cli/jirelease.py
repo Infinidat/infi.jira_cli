@@ -2,6 +2,7 @@
 infinidat jira project command-line tool
 
 Usage:
+    jirelease summary [--since-date=SINCE]
     jirelease list {project}
     jirelease release {project} {version}
     jirelease merge {project} {version} <target-version>
@@ -15,6 +16,7 @@ Usage:
     jirelease describe {project} {version} <description>
 
 Options:
+    summary                              list a summary of today's releases
     list                                 list unarchives releases
     release                              mark version as released
     merge                                move issues to target version and delete the merged one
@@ -28,7 +30,7 @@ Options:
     describe                             change description
     --project=PROJECT                    project key {project_default}
     --release=RELEASE                    version string {version_default}
-
+    --since-date=SINCE                   since when [default: today]
 """
 
 
@@ -166,10 +168,47 @@ def set_description(project_name, project_version, description):
     version.update(description=description)
 
 
+def datetime_to_date(item):
+    from datetime import date
+    return date(item.year, item.month, item.day)
+
+
+def summary(since):
+    from .jira_adapter import iter_projects, from_jira_formatted_date, to_jira_formatted_date
+    from datetime import date
+    from prettytable import PrettyTable
+
+    table = PrettyTable(["Project", "Version", "Description", "Release Date"])
+    table.align = 'l'
+    today = date.today()
+    since_date = today if since == 'today' else datetime_to_date(from_jira_formatted_date(since))
+
+    for project in iter_projects():
+        for version in reversed(project.versions):
+            if version.archived:
+                continue
+            release_date_string = getattr(version, 'releaseDate', '')
+            if not release_date_string:
+                continue
+            release_date = datetime_to_date(from_jira_formatted_date(release_date_string))
+            if (release_date-since_date).days<0:
+                continue
+            if (release_date-today).days>0:
+                continue
+
+            table.add_row([project.name,
+                           version.name if version.released else version.name + ' **' if getattr(version, 'overdue', False) else version.name + ' *',
+                           getattr(version, 'description', ''), getattr(version, 'releaseDate', '')])
+
+    print(table.get_string())
+
+
 def do_work(arguments):
     project_name = arguments['--project']
     project_version = arguments.get('--release')
-    if arguments['list']:
+    if arguments['summary']:
+        summary(arguments.get("--since-date"))
+    elif arguments['list']:
         pretty_print_project_versions_in_order(project_name)
     elif arguments['release']:
         release_version(project_name, project_version)
