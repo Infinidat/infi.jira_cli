@@ -34,14 +34,18 @@ def _get_arguments(argv, environ):
 def render_release_notes(project_name, project_version):
     from jinja2 import Template
     from pkg_resources import resource_string
-    from .jira_adapter import get_project, get_version, get_jira, issue_mappings
+    from .jira_adapter import get_project, get_version, get_jira, issue_mappings, get_custom_fields
 
     template = Template(resource_string('infi.jira_cli', 'release_notes.html'))
     issue_list = list(get_jira().search_issues("project={!r} and fixVersion={!r}".format(project_name, project_version)))
     issues = dict()
     for issue in issue_list:
-        issues.setdefault(issue_mappings['Type'](issue), list()).append(dict(key=issue.key, summary=issue_mappings['Summary'](issue)))
-    return template.render(project=get_project(project_name), release=get_version(project_name, project_version),
+        data = dict(key=issue.key,
+                    title=getattr(issue.fields(), get_custom_fields()["Release Notes Title"]),
+                    description=getattr(issue.fields(), get_custom_fields()['Release Notes Description']))
+        if data['title']:
+            issues.setdefault(issue_mappings['Type'](issue), list()).append(data)
+    return template.render(project=get_project(project_name), releases=[get_version(project_name, project_version)],
                            issues=issues)
 
 

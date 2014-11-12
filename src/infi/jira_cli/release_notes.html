@@ -1,6 +1,11 @@
-<br/>
+<div>
+    <ac:structured-macro ac:name="toc">
+      <ac:parameter ac:name="maxLevel">1</ac:parameter>
+      <ac:parameter ac:name="exclude">Version History</ac:parameter>
+    </ac:structured-macro>
+</div>
 <hr/>
-<br/>
+{%- for release in releases %}
 <div>
     <h1>Version {{ release.name }}</h1>
     <ul>
@@ -17,9 +22,13 @@
     {%- for issue in issues[issue_type] %}
         <li>
             <span>{{ issue.key }}</span>
-            <span>{{ issue.summary }}</span>
+            <span>{{ issue.title }}</span>
+            {%- if issue.description %}
+            <span>{{ issue.description }}</span>
+            {%- endif %}
         </li>
     {%- endfor %}
     </ul>
     {%- endfor %}
 </div>
+{%- endfor %}

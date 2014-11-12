@@ -16,6 +16,11 @@ def get_jira():
 
 
 @cached_function
+def get_custom_fields():
+    return {item['name']: item['id'] for item in get_jira().fields() if item['custom']}
+
+
+@cached_function
 def get_issues__assigned_to_user(user, project=None):
     return get_jira().search_issues(ASSIGNED_ISSUES.format("project={} AND ".format(project) if project else '', user))
 
