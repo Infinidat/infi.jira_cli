@@ -10,7 +10,8 @@ class ConfigurationError(Exception):
 
 
 class Configuration(Model):
-    fqdn = StringType(required=True)
+    jira_fqdn = StringType(required=True)
+    confluence_fqdn = StringType(required=False)
     username = StringType(required=True)
     password = StringType(required=True)
 

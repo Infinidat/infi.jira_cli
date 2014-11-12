@@ -10,7 +10,7 @@ def get_jira():
     from .config import Configuration
     from jira.client import JIRA
     config = Configuration.from_file()
-    options = dict(server="http://{0}".format(config.fqdn))
+    options = dict(server="http://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
     return JIRA(options, basic_auth)
 

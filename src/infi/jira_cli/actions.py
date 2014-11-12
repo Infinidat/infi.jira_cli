@@ -171,7 +171,7 @@ def config_set(arguments):
     from .config import Configuration
 
     values = {item: getattr(arguments, "<{0}>".format(item))
-              for item in ['fqdn', 'username', 'password']}
+              for item in ['jira_fqdn', 'username', 'password']}
     config = Configuration()
     for key, value in values.iteritems():
         setattr(config, key, value)
