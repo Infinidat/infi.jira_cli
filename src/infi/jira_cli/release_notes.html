@@ -4,31 +4,37 @@
       <ac:parameter ac:name="exclude">Version History</ac:parameter>
     </ac:structured-macro>
 </div>
-<hr/>
 {%- for release in releases %}
+<div>
+    <br/>
+    <hr/>
+    <br/>
+</div>
 <div>
     <h1>Version {{ release.name }}</h1>
     <ul>
-    {%- if release.releaseDate %}
-        <li>Release date: {{ release.releaseDate }}</li>
+    {%- if release.release_date %}
+        <li>Release date: {{ release.release_date }}</li>
     {%- endif %}
     {%- if release.description %}
         <li>Description: {{ release.description }}</li>
     {%- endif %}
     </ul>
-    {%- for issue_type in issues %}
-    <h2>{{ issue_type }}</h2>
+    {%- for topic in release.topics %}
+    {%- if topic.issues %}
+    <h2>{{ topic.name }}</h2>
     <ul>
-    {%- for issue in issues[issue_type] %}
+    {%- for issue in topic.issues %}
         <li>
             <span>{{ issue.key }}</span>
             <span>{{ issue.title }}</span>
             {%- if issue.description %}
-            <span>{{ issue.description }}</span>
+            <div>{{ issue.description }}</div>
             {%- endif %}
         </li>
     {%- endfor %}
     </ul>
+    {%- endif %}
     {%- endfor %}
 </div>
 {%- endfor %}
