@@ -1,0 +1,40 @@
+<div>
+    <ac:structured-macro ac:name="toc">
+      <ac:parameter ac:name="maxLevel">1</ac:parameter>
+      <ac:parameter ac:name="exclude">Version History</ac:parameter>
+    </ac:structured-macro>
+</div>
+{%- for release in releases %}
+<div>
+    <br/>
+    <hr/>
+    <br/>
+</div>
+<div>
+    <h1>Version {{ release.name }}</h1>
+    <ul>
+    {%- if release.release_date %}
+        <li>Release date: {{ release.release_date }}</li>
+    {%- endif %}
+    {%- if release.description %}
+        <li>Description: {{ release.description }}</li>
+    {%- endif %}
+    </ul>
+    {%- for topic in release.topics %}
+    {%- if topic.issues %}
+    <h2>{{ topic.name }}</h2>
+    <ul>
+    {%- for issue in topic.issues %}
+        <li>
+            <span>{{ issue.key }}</span>
+            <span>{{ issue.title }}</span>
+            {%- if issue.description %}
+            <div>{{ issue.description }}</div>
+            {%- endif %}
+        </li>
+    {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- endfor %}
+</div>
+{%- endfor %}

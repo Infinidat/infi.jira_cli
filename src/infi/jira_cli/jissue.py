@@ -18,7 +18,7 @@ Usage:
     jissue inventory {project}
     jissue filters
     jissue config show
-    jissue config set <fqdn> <username> <password>
+    jissue config set <jira_fqdn> <username> <password>
 
 Options:
     list                         list open issues in project/version

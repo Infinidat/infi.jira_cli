@@ -41,7 +41,7 @@ def _get_arguments(argv, environ):
     project_default = "[default: {}]".format(environ["JISSUE_PROJECT"]) if "JISSUE_PROJECT" in environ else ""
     version_default = "[default: {}]".format(environ["JISSUE_VERSION"]) if "JISSUE_VERSION" in environ else ""
     doc_with_defaults = __doc__.format(project_default=project_default, version_default=version_default,
-                                       project="[--project=PROJECT]" if project_default else "--project=PROEJCT",
+                                       project="[--project=PROJECT]" if project_default else "--project=PROJECT",
                                        version="[--release=RELEASE]" if version_default else "--release=RELEASE")
     arguments = Munch(docopt(doc_with_defaults, argv=argv, help=True, version=__version__))
     if environ.get("JISSUE_PROJECT") and not arguments.get("--project"):
