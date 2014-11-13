@@ -85,7 +85,7 @@ def should_appear_in_release_notes(release):
     return bool(release) and any(topic['issues'] for topic in release['topics'])
 
 
-def render_release_notes(project_name, project_version, include_next_release):
+def render_release_notes(project_name, project_version, include_next_release, page_id):
     from re import match
     from jinja2 import Template
     from pkg_resources import resource_string
@@ -99,17 +99,20 @@ def render_release_notes(project_name, project_version, include_next_release):
                      version.released or (version.name == get_next_release_name_in_project(project_name) if include_next_release else False)]
     releases = [get_release_notes_contents_for_specfic_version(project, version) for version in real_versions]
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
-    return template.render(project=project, releases=exposed_releases)
+    return template.render(project=project, releases=exposed_releases, page_id=page_id)
 
 
 def publish_release_notes(project_name, project_version, include_next_release):
     from .confluence_adapter import update_page_contents, get_release_notes_page_id
-    release_notes = render_release_notes(project_name, project_version, include_next_release)
-    update_page_contents(get_release_notes_page_id(project_name), release_notes)
+    page_id = get_release_notes_page_id(project_name)
+    release_notes = render_release_notes(project_name, project_version, include_next_release, page_id)
+    update_page_contents(page_id, release_notes)
 
 
 def show_release_notes(project_name, project_version, include_next_release):
-    print render_release_notes(project_name, project_version, include_next_release)
+    from .confluence_adapter import get_release_notes_page_id
+    page_id = get_release_notes_page_id(project_name)
+    print render_release_notes(project_name, project_version, include_next_release, page_id)
 
 
 def fetch_release_notes(project_name):
