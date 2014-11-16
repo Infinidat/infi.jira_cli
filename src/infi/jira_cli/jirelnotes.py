@@ -121,7 +121,14 @@ def fetch_release_notes(project_name):
 
 
 def notify_related_tickets(project_name, project_version):
-    raise NotImplementedError()
+    from .jira_adapter import search_issues, issue_mappings, comment_on_issue
+    related_tickets = {}
+    for issue in search_issues("project={} AND fixVersion={!r} AND resolution=Fixed".format(project_name, project_version)):
+        for link in issue_mappings['IssueLinks'](issue):
+            if link.type.name in (u'Originates', ) and not link.inwardIssue.key.startswith(project_name.upper()):
+                related_tickets.setdefault(link.inwardIssue.key, list()).append(issue.key)
+    for key, issues_in_version in related_tickets.items():
+        comment_on_issue(key, "{} version {} which solves {} is out, go check it out".format(project_name, project_version, ' '.join(issues_in_version)))
 
 
 def do_work(arguments):
