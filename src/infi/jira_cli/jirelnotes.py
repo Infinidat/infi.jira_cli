@@ -85,7 +85,7 @@ def should_appear_in_release_notes(release):
     return bool(release) and any(topic['issues'] for topic in release['topics'])
 
 
-def render_release_notes(project_name, project_version, include_next_release):
+def render_release_notes(project_name, project_version, include_next_release, page_id):
     from re import match
     from jinja2 import Template
     from pkg_resources import resource_string
@@ -99,17 +99,20 @@ def render_release_notes(project_name, project_version, include_next_release):
                      version.released or (version.name == get_next_release_name_in_project(project_name) if include_next_release else False)]
     releases = [get_release_notes_contents_for_specfic_version(project, version) for version in real_versions]
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
-    return template.render(project=project, releases=exposed_releases)
+    return template.render(project=project, releases=exposed_releases, page_id=page_id)
 
 
 def publish_release_notes(project_name, project_version, include_next_release):
     from .confluence_adapter import update_page_contents, get_release_notes_page_id
-    release_notes = render_release_notes(project_name, project_version, include_next_release)
-    update_page_contents(get_release_notes_page_id(project_name), release_notes)
+    page_id = get_release_notes_page_id(project_name)
+    release_notes = render_release_notes(project_name, project_version, include_next_release, page_id)
+    update_page_contents(page_id, release_notes)
 
 
 def show_release_notes(project_name, project_version, include_next_release):
-    print render_release_notes(project_name, project_version, include_next_release)
+    from .confluence_adapter import get_release_notes_page_id
+    page_id = get_release_notes_page_id(project_name)
+    print render_release_notes(project_name, project_version, include_next_release, page_id)
 
 
 def fetch_release_notes(project_name):
@@ -118,7 +121,14 @@ def fetch_release_notes(project_name):
 
 
 def notify_related_tickets(project_name, project_version):
-    raise NotImplementedError()
+    from .jira_adapter import search_issues, issue_mappings, comment_on_issue
+    related_tickets = {}
+    for issue in search_issues("project={} AND fixVersion={!r} AND resolution=Fixed".format(project_name, project_version)):
+        for link in issue_mappings['IssueLinks'](issue):
+            if link.type.name in (u'Originates', ) and not link.inwardIssue.key.startswith(project_name.upper()):
+                related_tickets.setdefault(link.inwardIssue.key, list()).append(issue.key)
+    for key, issues_in_version in related_tickets.items():
+        comment_on_issue(key, "{} version {} which solves {} is out, go check it out".format(project_name, project_version, ' '.join(issues_in_version)))
 
 
 def do_work(arguments):

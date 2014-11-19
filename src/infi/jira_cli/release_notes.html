@@ -38,3 +38,13 @@
     {%- endfor %}
 </div>
 {%- endfor %}
+<div>
+    <ac:structured-macro ac:name="alias">
+        <ac:parameter ac:name="alias">{{ page_id }}</ac:parameter>
+        <ac:parameter ac:name="parent">
+            <ac:link>
+                <ri:page ri:content-title="@self"/>
+            </ac:link>
+        </ac:parameter>
+    </ac:structured-macro>
+</div>
