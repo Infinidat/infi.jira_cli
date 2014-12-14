@@ -29,7 +29,9 @@
             <span>{{ issue.key }}</span>
             <span>{{ issue.title }}</span>
             {%- if issue.description %}
-            <div>{{ issue.description }}</div>
+            <ul>
+                <li>{{ issue.description }}</li>
+            </ul>
             {%- endif %}
         </li>
     {%- endfor %}

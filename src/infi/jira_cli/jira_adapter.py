@@ -152,7 +152,7 @@ def create_link(link_type_name, from_key, to_key):
 
 def search_issues(query):
     jira = get_jira()
-    return jira.search_issues(query, maxResults=100)
+    return jira.search_issues(query, maxResults=2000)
 
 
 def comment_on_issue(key, message):

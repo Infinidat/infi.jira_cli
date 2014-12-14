@@ -33,6 +33,13 @@ def format(value, slice=None):
     return unicode(value)[:slice]
 
 
+def _stringify(item):
+    try:
+        return str(item)
+    except:
+        return ''
+
+
 def _list_issues(arguments, issues):
     from prettytable import PrettyTable
     from .jira_adapter import from_jira_formatted_datetime, issue_mappings
@@ -41,7 +48,7 @@ def _list_issues(arguments, issues):
     sortby_column = arguments.get("--sort-by").capitalize()
     reverse = arguments.get("--reverse")
     for issue in issues:
-        table.add_row([issue_mappings[column](issue) for column in table.field_names])
+        table.add_row([_stringify(issue_mappings[column](issue)) for column in table.field_names])
     print(table.get_string(reversesort=reverse, sortby=sortby_column, align='l'))
 
 

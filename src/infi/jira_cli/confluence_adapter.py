@@ -12,9 +12,11 @@ def get_confluence():
 
 
 def get_release_notes_page_id(project_name):
-    response = get_confluence().get('/prototype/1/search/site?type=page&label=global:release-notes&label=global:{}'.format(project_name.lower()))
-    assert response['totalSize']
-    return response['result'][0]['id']
+    release_notes = get_confluence().get('/prototype/1/search/site?type=page&label=global:release-notes')
+    project = get_confluence().get('/prototype/1/search/site?type=page&label=global:{}'.format(project_name.lower()))
+    page = set([item['id'] for item in release_notes['result']]).intersection(set([item['id'] for item in project['result']]))
+    assert len(page) == 1
+    return page.pop()
 
 
 def get_page_contents(page_id):
