@@ -125,7 +125,7 @@ def notify_related_tickets(project_name, project_version):
     related_tickets = {}
     for issue in search_issues("project={} AND fixVersion={!r} AND resolution=Fixed".format(project_name, project_version)):
         for link in issue_mappings['IssueLinks'](issue):
-            if link.type.name in (u'Originates', ) and not link.inwardIssue.key.startswith(project_name.upper()):
+            if link.type.name in (u'Originates', u'Clones') and not link.inwardIssue.key.startswith(project_name.upper()):
                 related_tickets.setdefault(link.inwardIssue.key, list()).append(issue.key)
     for key, issues_in_version in related_tickets.items():
         comment_on_issue(key, "{} version {} which solves {} is out, go check it out".format(project_name, project_version, ' '.join(issues_in_version)))
