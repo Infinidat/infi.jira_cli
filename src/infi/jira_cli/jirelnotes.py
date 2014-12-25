@@ -18,16 +18,18 @@ Options:
 RELEASE_NOTES_TITLE_KEY = 'Release Notes Title'
 RELEASE_NOTES_DESCRIPTION_KEY = 'Release Notes Description'
 NOTIFICATION_MESSAGE = """{{ project.name }} v{{ version }} has been released and now available for download.
-{%- if other_versions %}
+{% if other_versions %}
 This release supercedes the following unreleased versions:
 {%- for version in other_versions %}
 * {{ version }}
 {%- endfor %}
 {%- endif %}
+{% if related_issues %}
 This release solves the following related issues:
 {%- for issue in related_issues %}
 * {{ issue.key }}: {{ issue_mappings.Summary(issue) }}
 {%- endfor %}
+{%- endif %}
 """
 
 def _get_arguments(argv, environ):
@@ -137,6 +139,7 @@ def notify_related_tickets(project_key, project_version, other_versions):
     notification_template = Template(NOTIFICATION_MESSAGE.strip())
     project = get_project(project_key)
     related_tickets = {}
+    versions = []
     if other_versions:
         versions = sorted(set(other_versions + [project_version]), key=lambda version: parse_version(version))
         fix_version_string = 'fixVersion in ({})'.format(', '.join([repr(version) for version in versions]))
@@ -150,8 +153,8 @@ def notify_related_tickets(project_key, project_version, other_versions):
                 related_tickets.setdefault(link.inwardIssue.key, list()).append(issue)
     for key, issues_in_version in related_tickets.items():
         comment = notification_template.render(project=project, version=project_version,
-                                               other_versions=other_versions[:-1], related_issues=issues_in_version,
-                                               release_notes_url='', repo_url='', issue_mappings=issue_mappings)
+                                               other_versions=versions[:-1], related_issues=issues_in_version,
+                                               issue_mappings=issue_mappings)
         print 'commenting on %s' % key
         comment_on_issue(key, comment)
 
