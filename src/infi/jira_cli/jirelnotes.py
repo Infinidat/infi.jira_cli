@@ -24,21 +24,19 @@ This release supercedes the following unreleased versions:
 * {{ version }}
 {%- endfor %}
 {%- endif %}
-{% if related_issues %}
+{% if resolved_issues %}
 This release solves the following related issues:
-{%- for issue in resolved_related_issues %}
+{%- for issue in resolved_issues %}
 * {{ issue.key }}: {{ issue_mappings.Summary(issue) }}
 {%- endfor %}
-<<<<<<< HEAD
-=======
-{%- if unresolved_related_issues %}
+{%- endif %}
+{% if unresolved_issues %}
 Still, there are more related issues that are still open:
-{%- for issue in unresolved_related_issues %}
+{%- for issue in unresolved_issues %}
 * {{ issue.key }}: {{ issue_mappings.Summary(issue) }}
 {%- endfor %}
 {%- else %}
 All related issues are now resolved.
->>>>>>> HOSTDEV-1940
 {%- endif %}
 """
 
@@ -144,45 +142,64 @@ def fetch_release_notes(project_key):
 
 
 def notify_related_tickets(project_key, project_version, other_versions, dry_run):
-    from jinja2 import Template
-    from .jira_adapter import search_issues, issue_mappings, comment_on_issue, get_project, get_issue
-    from pkg_resources import parse_version
-    notification_template = Template(NOTIFICATION_MESSAGE.strip())
-    project = get_project(project_key)
-    related_tickets = {}
-    versions = []
-    if other_versions:
-        versions = sorted(set(other_versions + [project_version]), key=lambda version: parse_version(version))
-        fix_version_string = 'fixVersion in ({})'.format(', '.join([repr(version) for version in versions]))
-    else:
-        fix_version_string = 'fixVersion={!r}'.format(project_version)
-    for issue in search_issues("project={} AND {} AND resolution=Fixed".format(project_key, fix_version_string)):
-        for link in issue_mappings['IssueLinks'](issue):
+    def _build_jira_query_string():
+        from pkg_resources import parse_version
+        if other_versions:
+            versions.extend(sorted(set(other_versions + [project_version]), key=lambda version: parse_version(version)))
+            fix_version_string = 'fixVersion in ({})'.format(', '.join([repr(version) for version in versions]))
+        else:
+            fix_version_string = 'fixVersion={!r}'.format(project_version)
+        return "project={} AND {} AND resolution=Fixed".format(project_key, fix_version_string)
+
+    def _iter_related_tickets(issue):
+        for link in issue_mappings.IssueLinks(issue):
             if not hasattr(link, 'inwardIssue'):
                 continue
-            # if not link.type.name in (u'Originates', u'Clones', u'Relates'):
-            #     continue
+            if not link.type.name in (u'Originates', u'Clones', u'Relates'):
+                continue
             if link.inwardIssue.key.startswith(project_key.upper()):
                 continue
-            related_tickets.setdefault(link.inwardIssue.key, list()).append(issue)
-    for key, issues_in_version in related_tickets.items():
-        unresolved_related_issues = []
-        for link in issue_mappings['IssueLinks'](get_issue(key)):
+            yield link.inwardIssue
+
+    def find_issues_in_other_projects_that_are_pending_on_this_release():
+        related_tickets = {}
+        for issue in search_issues(_build_jira_query_string()):
+            for related_ticket in _iter_related_tickets(issue):
+                related_tickets.setdefault(get_issue(related_ticket.key), list()).append(issue)
+        return related_tickets
+
+    def _iter_related_remaining_open_issues(related_ticket):
+        for link in issue_mappings.IssueLinks(related_ticket):
             if not hasattr(link, 'outwardIssue'):
                 continue
             if not issue_mappings.Status(link.outwardIssue) in (u'Open', 'Reopened'):
                 continue
-            unresolved_related_issues.append(link.outwardIssue)
-        comment = notification_template.render(project=project, version=project_version,
-                                               other_versions=versions[:-1],
-                                               unresolved_related_issues=unresolved_related_issues,
-                                               resolved_related_issues=issues_in_version,
-                                               issue_mappings=issue_mappings)
+            yield link.outwardIssue
+
+    def _build_comment(resolved_issues, unresolved_issues):
+        from jinja2 import Template
+        sort_issues = lambda issues: sorted(issues, key=lambda issue: issue.key)
+        notification_template = Template(NOTIFICATION_MESSAGE.strip())
+        return notification_template.render(project=project,
+                                            version=project_version,
+                                            other_versions=versions[:-1],
+                                            resolved_issues=sort_issues(resolved_issues),
+                                            unresolved_issues=sort_issues(unresolved_issues),
+                                            issue_mappings=issue_mappings)
+
+    from .jira_adapter import search_issues, issue_mappings, comment_on_issue, get_project, get_issue
+    project = get_project(project_key)
+    versions = []
+
+    related_tickets = find_issues_in_other_projects_that_are_pending_on_this_release()
+    for related_ticket, resolved_issues in sorted(related_tickets.items(), key=lambda item: item[0].key):
+        unresolved_issues = list(_iter_related_remaining_open_issues(related_ticket))
+        comment = _build_comment(resolved_issues, unresolved_issues)
         if dry_run:
-            print "would've commented on %s if this wasn't a dry-run: %s" % (key, comment)
+            print "<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket.key, comment)
         else:
-            print 'commenting on %s' % key
-            comment_on_issue(key, comment)
+            print 'commenting on %s' % related_ticket.key
+            comment_on_issue(related_ticket.key, comment)
 
 
 def do_work(arguments):
