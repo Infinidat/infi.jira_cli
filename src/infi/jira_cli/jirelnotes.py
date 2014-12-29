@@ -4,7 +4,7 @@ infinidat jira/confluence release-notes command-line tool
 Usage:
     jirelnotes show {project} [--include-next-release]
     jirelnotes publish {project} [--include-next-release]
-    jirelnotes notify {project} {version} [<other-versions-included-in-this-releases>...]
+    jirelnotes notify {project} {version} [<other-versions-included-in-this-releases>...] [--dry-run]
     jirelnotes fetch
 
 Options:
@@ -143,9 +143,9 @@ def fetch_release_notes(project_key):
     print get_page_contents(get_release_notes_page_id(project_key))
 
 
-def notify_related_tickets(project_key, project_version, other_versions):
+def notify_related_tickets(project_key, project_version, other_versions, dry_run):
     from jinja2 import Template
-    from .jira_adapter import search_issues, issue_mappings, comment_on_issue, get_project
+    from .jira_adapter import search_issues, issue_mappings, comment_on_issue, get_project, get_issue
     from pkg_resources import parse_version
     notification_template = Template(NOTIFICATION_MESSAGE.strip())
     project = get_project(project_key)
@@ -167,10 +167,10 @@ def notify_related_tickets(project_key, project_version, other_versions):
             related_tickets.setdefault(link.inwardIssue.key, list()).append(issue)
     for key, issues_in_version in related_tickets.items():
         unresolved_related_issues = []
-        for link in issue_mappings['IssueLinks'](issue):
+        for link in issue_mappings['IssueLinks'](get_issue(key)):
             if not hasattr(link, 'outwardIssue'):
                 continue
-            if not issue_mappings.Status(link.outwardIssue.key) in (u'Open', 'Reopened'):
+            if not issue_mappings.Status(link.outwardIssue) in (u'Open', 'Reopened'):
                 continue
             unresolved_related_issues.append(link.outwardIssue)
         comment = notification_template.render(project=project, version=project_version,
@@ -178,8 +178,11 @@ def notify_related_tickets(project_key, project_version, other_versions):
                                                unresolved_related_issues=unresolved_related_issues,
                                                resolved_related_issues=issues_in_version,
                                                issue_mappings=issue_mappings)
-        print 'commenting on %s' % key
-        comment_on_issue(key, comment)
+        if dry_run:
+            print "would've commented on %s if this wasn't a dry-run: %s" % (key, comment)
+        else:
+            print 'commenting on %s' % key
+            comment_on_issue(key, comment)
 
 
 def do_work(arguments):
@@ -193,7 +196,7 @@ def do_work(arguments):
         fetch_release_notes(project_key)
     elif arguments['notify']:
         other_versions = arguments.get('<other-versions-included-in-this-releases>', list())
-        notify_related_tickets(project_key, project_version, other_versions)
+        notify_related_tickets(project_key, project_version, other_versions, arguments['--dry-run'])
 
 
 def _jiject(argv, environ):
