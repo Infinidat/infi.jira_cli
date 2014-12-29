@@ -26,11 +26,22 @@ This release supercedes the following unreleased versions:
 {%- endif %}
 {% if related_issues %}
 This release solves the following related issues:
-{%- for issue in related_issues %}
+{%- for issue in resolved_related_issues %}
 * {{ issue.key }}: {{ issue_mappings.Summary(issue) }}
 {%- endfor %}
+<<<<<<< HEAD
+=======
+{%- if unresolved_related_issues %}
+Still, there are more related issues that are still open:
+{%- for issue in unresolved_related_issues %}
+* {{ issue.key }}: {{ issue_mappings.Summary(issue) }}
+{%- endfor %}
+{%- else %}
+All related issues are now resolved.
+>>>>>>> HOSTDEV-1940
 {%- endif %}
 """
+
 
 def _get_arguments(argv, environ):
     from .__version__ import __version__
@@ -147,13 +158,25 @@ def notify_related_tickets(project_key, project_version, other_versions):
         fix_version_string = 'fixVersion={!r}'.format(project_version)
     for issue in search_issues("project={} AND {} AND resolution=Fixed".format(project_key, fix_version_string)):
         for link in issue_mappings['IssueLinks'](issue):
-            if link.type.name in (u'Originates', u'Clones') and hasattr(link, 'inwardIssue'):
-                if link.inwardIssue.key.startswith(project_key.upper()):
-                    continue
-                related_tickets.setdefault(link.inwardIssue.key, list()).append(issue)
+            if not hasattr(link, 'inwardIssue'):
+                continue
+            # if not link.type.name in (u'Originates', u'Clones', u'Relates'):
+            #     continue
+            if link.inwardIssue.key.startswith(project_key.upper()):
+                continue
+            related_tickets.setdefault(link.inwardIssue.key, list()).append(issue)
     for key, issues_in_version in related_tickets.items():
+        unresolved_related_issues = []
+        for link in issue_mappings['IssueLinks'](issue):
+            if not hasattr(link, 'outwardIssue'):
+                continue
+            if not issue_mappings.Status(link.outwardIssue.key) in (u'Open', 'Reopened'):
+                continue
+            unresolved_related_issues.append(link.outwardIssue)
         comment = notification_template.render(project=project, version=project_version,
-                                               other_versions=versions[:-1], related_issues=issues_in_version,
+                                               other_versions=versions[:-1],
+                                               unresolved_related_issues=unresolved_related_issues,
+                                               resolved_related_issues=issues_in_version,
                                                issue_mappings=issue_mappings)
         print 'commenting on %s' % key
         comment_on_issue(key, comment)
