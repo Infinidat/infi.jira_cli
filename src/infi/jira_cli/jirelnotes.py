@@ -5,7 +5,7 @@ Usage:
     jirelnotes show {project} [--include-next-release]
     jirelnotes publish {project} [--include-next-release]
     jirelnotes notify {project} {version} [<other-versions-included-in-this-releases>...] [--dry-run]
-    jirelnotes fetch
+    jirelnotes fetch {project}
 
 Options:
     show                                 show the generated release notes

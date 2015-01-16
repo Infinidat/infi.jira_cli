@@ -21,7 +21,7 @@ def get_release_notes_page_id(project_name):
 
 def get_page_contents(page_id):
     page = get_confluence().get('/api/content/{}?expand=body.view,version.number'.format(page_id))
-    print page['body']['view']['value']
+    return page['body']['view']['value']
 
 
 def update_page_contents(page_id, body):
