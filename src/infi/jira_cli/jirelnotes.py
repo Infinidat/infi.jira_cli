@@ -153,13 +153,12 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
 
     def _iter_related_tickets(issue):
         for link in issue_mappings.IssueLinks(issue):
-            if not hasattr(link, 'inwardIssue'):
+            if not link.type.name in (u'Originates', u'Clones', u'Cloners', u'Relates', 'Supersede', 'Duplicate'):
                 continue
-            if not link.type.name in (u'Originates', u'Clones', u'Relates'):
+            related_issue = getattr(link, 'inwardIssue', getattr(link, 'outwardIssue', None))
+            if related_issue.key.startswith(project_key.upper()):
                 continue
-            if link.inwardIssue.key.startswith(project_key.upper()):
-                continue
-            yield link.inwardIssue
+            yield related_issue
 
     def find_issues_in_other_projects_that_are_pending_on_this_release():
         related_tickets = {}
