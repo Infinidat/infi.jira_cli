@@ -21,12 +21,14 @@ def get_release_notes_page_id(project_name):
 
 def get_page_contents(page_id):
     page = get_confluence().get('/api/content/{}?expand=body.view,version.number'.format(page_id))
-    print page['body']['view']['value']
+    return page['body']['view']['value']
 
 
 def update_page_contents(page_id, body):
-    page = get_confluence().get('/api/content/{}?expand=body.view,version.number'.format(page_id))
+    page = get_confluence().get('/api/content/{}?expand=body.view,version.number,ancestors'.format(page_id))
     data = dict(version=dict(number=page['version']['number']+1),
                 id=page['id'], title=page['title'], type='page',
                 body=dict(representation='storage', storage=dict(value=body)))
+    if page['ancestors']:
+        data['ancestors'] = [dict(id=page['ancestors'][-1]['id'])]
     get_confluence().put('api/content/%s' % page_id, data=data)
