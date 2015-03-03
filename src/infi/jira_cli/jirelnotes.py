@@ -19,7 +19,7 @@ RELEASE_NOTES_TITLE_KEY = 'Release Notes Title'
 RELEASE_NOTES_DESCRIPTION_KEY = 'Release Notes Description'
 NOTIFICATION_MESSAGE = """{{ project.name }} v{{ version }} has been released and now available for download.
 {% if other_versions %}
-This release supercedes the following unreleased versions:
+This release supersedes the following unreleased versions:
 {%- for version in other_versions %}
 * {{ version }}
 {%- endfor %}
