@@ -106,34 +106,46 @@ def should_appear_in_release_notes(release):
     return bool(release) and any(topic['issues'] for topic in release['topics'])
 
 
-def render_release_notes(project_key, project_version, include_next_release, page_id):
+
+def render_release_notes(project_key, project_version, include_next_release, page_id, header_id, footer_id):
     from re import match
     from jinja2 import Template
     from pkg_resources import resource_string
     from .jira_adapter import get_project, get_version, get_jira, issue_mappings, get_custom_fields
     from .jira_adapter import get_next_release_name_in_project
-
+    from .confluence_adapter import iter_attachments, get_page_contents
     template = Template(resource_string('infi.jira_cli', 'release_notes.html'))
     project = get_project(project_key)
     real_versions = [version for version in reversed(project.versions) if
                      match(r'[0-9\.]+', version.name) and not version.archived and
                      version.released or (version.name == get_next_release_name_in_project(project_key) if include_next_release else False)]
     releases = [get_release_notes_contents_for_specfic_version(project, version) for version in real_versions]
+    attachments = list(iter_attachments(page_id))
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
-    return template.render(project=project, releases=exposed_releases, page_id=page_id)
+    return template.render(project=project, releases=exposed_releases, page_id=page_id, attachments=attachments,
+                           header=get_page_contents(header_id) if header_id else None,
+                           footer=get_page_contents(footer_id) if footer_id else None)
+
+
+def get_release_notes(project_key, project_version, include_next_release):
+    from .confluence_adapter import get_release_notes_page_id
+    from .confluence_adapter import get_release_notes_header_page_id, get_release_notes_footer_page_id
+    page_id = get_release_notes_page_id(project_key)
+    header_id = get_release_notes_header_page_id(project_key)
+    footer_id = get_release_notes_footer_page_id(project_key)
+    release_notes = render_release_notes(project_key, project_version, include_next_release, page_id, header_id, footer_id)
+    return release_notes, page_id
 
 
 def publish_release_notes(project_key, project_version, include_next_release):
-    from .confluence_adapter import update_page_contents, get_release_notes_page_id
-    page_id = get_release_notes_page_id(project_key)
-    release_notes = render_release_notes(project_key, project_version, include_next_release, page_id)
+    from .confluence_adapter import update_page_contents
+    release_notes, page_id = get_release_notes(project_key, project_version, include_next_release)
     update_page_contents(page_id, release_notes)
 
 
 def show_release_notes(project_key, project_version, include_next_release):
-    from .confluence_adapter import get_release_notes_page_id
-    page_id = get_release_notes_page_id(project_key)
-    print render_release_notes(project_key, project_version, include_next_release, page_id)
+    release_notes, page_id = get_release_notes(project_key, project_version, include_next_release)
+    print release_notes
 
 
 def fetch_release_notes(project_key):
