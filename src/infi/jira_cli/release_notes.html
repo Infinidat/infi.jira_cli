@@ -1,17 +1,46 @@
 <div>
+    <h1>Table of Contents</h1>
+</div>
+<div>
     <ac:structured-macro ac:name="toc">
       <ac:parameter ac:name="maxLevel">1</ac:parameter>
-      <ac:parameter ac:name="exclude">Version History</ac:parameter>
+      <ac:parameter ac:name="exclude">Table of Contents</ac:parameter>
     </ac:structured-macro>
+</div>
+{%- if header %}
+{{ header }}
+{%- endif %}
+{%- if attachments %}
+<div>
+    <br/>
+    <br/>
+</div>
+<div>
+    <h1>User Documentation</h1>
+</div>
+<div>
+    <ul>
+    {%- for attachment in attachments %}
+        <li><a href="{{ attachment.link }}">{{ attachment.title }}</a></li>
+    {%- endfor %}
+    </ul>
+</div>
+{%- endif %}
+{%- if releases %}
+<div>
+    <br/>
+    <br/>
+</div>
+<div>
+<h1>Release Notes</h1>
+</div>
+<div>
+    <br/>
+    <br/>
 </div>
 {%- for release in releases %}
 <div>
-    <br/>
-    <hr/>
-    <br/>
-</div>
-<div>
-    <h1>Version {{ release.name }}</h1>
+    <h2>Version {{ release.name }}</h2>
     <ul>
     {%- if release.release_date %}
         <li>Release date: {{ release.release_date }}</li>
@@ -39,14 +68,13 @@
     {%- endif %}
     {%- endfor %}
 </div>
-{%- endfor %}
 <div>
-    <ac:structured-macro ac:name="alias">
-        <ac:parameter ac:name="alias">{{ page_id }}</ac:parameter>
-        <ac:parameter ac:name="parent">
-            <ac:link>
-                <ri:page ri:content-title="@self"/>
-            </ac:link>
-        </ac:parameter>
-    </ac:structured-macro>
+    <br/>
+    <hr/>
+    <br/>
 </div>
+{%- endfor %}
+{%- endif %}
+{%- if footer %}
+{{ footer }}
+{%- endif %}
