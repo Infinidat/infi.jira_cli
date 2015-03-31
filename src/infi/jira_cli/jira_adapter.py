@@ -119,7 +119,7 @@ def get_next_release_name_in_project(key):
                    key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))[0].name
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
