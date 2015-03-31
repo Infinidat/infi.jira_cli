@@ -55,21 +55,23 @@ class SearchTestCase(unittest.TestCase):
 class WorkLogTestCase(unittest.TestCase):
     def test_simple(self):
         with test_issue_context() as issue:
+            self.assertEquals(jissue(["assign", "--to-me", issue.key]), 0)
             self.assertEquals(jissue(["start", issue.key]), 0)
             self.assertEquals(jissue(["stop", issue.key]), 0)
 
     def test_jish(self):
         with test_issue_context() as issue:
+            self.assertEquals(jissue(["assign", "--to-me", issue.key]), 0)
             self.assertEquals(jissue(["start"], dict(JISSUE_ISSUE=issue.key)), 0)
             self.assertEquals(jissue(["stop"], dict(JISSUE_ISSUE=issue.key)), 0)
 
 
 class ShowTestCase(unittest.TestCase):
-    @unittest.parameters.iterate("key", ["HOSTDEV-767"])
+    @unittest.parameters.iterate("key", ["HOSTDEV-787"])
     def test_simple(self, key):
         self.assertEquals(jissue(["show", key]), 0)
 
-    def test_jish(self, key="HOSTDEV-767"):
+    def test_jish(self, key="HOSTDEV-787"):
         self.assertEquals(jissue(["show"], dict(JISSUE_ISSUE=key)), 0)
 
 
@@ -122,17 +124,17 @@ class CreateTestCase(unittest.TestCase):
 
     def test_component(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
-        key = jissue(["create", "Bug", "this is a test", "--component=Integration Tests", "HOSTDEV"])
+        key = jissue(["create", "Bug", "this is a test", "--component=integration-tests", "HOSTDEV"])
         issue = jira_adapter.get_issue(key)
-        self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["Integration Tests"])
+        self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["integration-tests"])
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_component__jish(self):
         fix_version = jira_adapter.get_next_release_name_in_project("HOSTDEV")
-        key = jissue(["create", "Bug", "this is a test"], dict(JISSUE_COMPONENT="Integration Tests",
+        key = jissue(["create", "Bug", "this is a test"], dict(JISSUE_COMPONENT="integration-tests",
                                                                JISSUE_PROJECT="HOSTDEV"))
         issue = jira_adapter.get_issue(key)
-        self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["Integration Tests"])
+        self.assertEquals(jira_adapter.issue_mappings['Components'](issue), ["integration-tests"])
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_version(self):
@@ -226,11 +228,11 @@ class ResolveTestCase(unittest.TestCase):
 class LinkTestCase(unittest.TestCase):
     def test_jisk(self):
         with test_issue_context() as issue:
-            self.assertEquals(jissue(["link", "relates", "HOSTDEV-767"], dict(JISSUE_ISSUE=issue.key)), 0)
+            self.assertEquals(jissue(["link", "relates", "HOSTDEV-787"], dict(JISSUE_ISSUE=issue.key)), 0)
 
     def test_simple(self):
         with test_issue_context() as issue:
-            self.assertEquals(jissue(["link", "relates", "HOSTDEV-767", issue.key]), 0)
+            self.assertEquals(jissue(["link", "relates", "HOSTDEV-787", issue.key]), 0)
 
 
 class LabelTestCase(unittest.TestCase):
