@@ -1,5 +1,5 @@
 from infi.pyutils.lazy import cached_function, clear_cache
-from jira.exceptions import JIRAError
+from jira import JIRAError
 from munch import Munch
 CURRENT_USER = "currentUser()"
 ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority DESC, created ASC"
@@ -8,11 +8,11 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 @cached_function
 def get_jira():
     from .config import Configuration
-    from jira.client import JIRA
+    from jira import JIRA
     config = Configuration.from_file()
     options = dict(server="http://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
-    return JIRA(options, basic_auth)
+    return JIRA(options, basic_auth=basic_auth)
 
 
 @cached_function
@@ -63,7 +63,7 @@ def transition_issue(key, transition_string, fields):
     jira = get_jira()
     issue = jira.issue(key)
     [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
-    jira.transition_issue(issue=issue.key, transitionId=transition, fields=fields)
+    jira.transition_issue(issue=issue.key, transition=transition, fields=fields)
 
 
 def resolve_issue(key, resolution_string, fix_versions_strings):

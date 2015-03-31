@@ -230,7 +230,7 @@ def do_work(arguments):
 def _jiject(argv, environ):
     from sys import stderr
     from copy import deepcopy
-    from jira.exceptions import JIRAError
+    from jira import JIRAError
     from infi.execute import ExecutionError
     from .actions import choose_action
     from docopt import DocoptExit

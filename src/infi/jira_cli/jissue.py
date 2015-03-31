@@ -82,7 +82,7 @@ def _get_arguments(argv, environ):
 def _jissue(argv, environ=dict()):
     from sys import stderr
     from copy import deepcopy
-    from jira.exceptions import JIRAError
+    from jira import JIRAError
     from infi.execute import ExecutionError
     from .actions import choose_action
     from .config import ConfigurationError
