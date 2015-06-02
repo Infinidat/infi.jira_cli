@@ -141,12 +141,16 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
     summary = details.split("\n", 1)[0]
     description = details.split("\n", 1)[1:]
     fields = dict(project=dict(id=str(project.id)),
-                               issuetype=dict(id=str(issue_type.id)),
-                               components=[dict(id=str(component.id)) for component in components],
-                               fixVersions=[dict(id=str(version.id)) for version in versions],
-                               summary=summary, description=description[0] if description else '')
+                  issuetype=dict(id=str(issue_type.id)),
+                  components=[dict(id=str(component.id)) for component in components],
+                  fixVersions=[dict(id=str(version.id)) for version in versions],
+                  summary=summary, description=description[0] if description else '')
     if assignee:
       fields['assignee'] = dict(name=assignee)
+    if not versions:
+        fields.pop('fixVersions')
+    if not components:
+        fields.pop('components')
     if additional_fields:
         for key, value in additional_fields:
             fields[get_custom_fields()[key]] = [value]
