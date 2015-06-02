@@ -154,7 +154,8 @@ def create(arguments):
     fix_version_name = arguments.get("--fix-version") or get_next_release_name_in_project(project_key)
     component_name = arguments.get("--component")
     assignee = Configuration.from_file().username if arguments.get("--assign-to-me") else "-1"
-    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee)
+    additional_fields = [item.split(':=') for item in arguments.get("--field", list())]
+    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee, additional_fields)
     print(issue.key) if arguments.get("--short") else show({"<issue>": issue.key})
     return issue.key
 

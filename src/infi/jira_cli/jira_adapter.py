@@ -8,7 +8,14 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 @cached_function
 def get_jira():
     from .config import Configuration
-    from jira import JIRA
+    from jira import JIRA as _JIRA
+
+    class JIRA(_JIRA):
+        def __del__(self):
+            # workaround for silencing the exception thrown upon exit to stderr
+            # Exception AttributeError: "'NoneType' object has no attribute 'version_info'" in <bound method JIRA.__del__ of <jira.client.JIRA object at 0x10e46a250>> ignored
+            pass
+
     config = Configuration.from_file()
     options = dict(server="http://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
@@ -115,11 +122,14 @@ def get_next_release_name_for_issue(key):
 @cached_function
 def get_next_release_name_in_project(key):
     project = get_project(key)
-    return sorted([version for version in project.versions if not version.released],
-                   key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))[0].name
+    next_releases = sorted([version for version in project.versions if not version.released],
+                           key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))
+    if next_releases:
+      return next_releases[0].name
+    return ''
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, additional_fields=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
@@ -131,12 +141,19 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
     summary = details.split("\n", 1)[0]
     description = details.split("\n", 1)[1:]
     fields = dict(project=dict(id=str(project.id)),
-                               issuetype=dict(id=str(issue_type.id)),
-                               components=[dict(id=str(component.id)) for component in components],
-                               fixVersions=[dict(id=str(version.id)) for version in versions],
-                               summary=summary, description=description[0] if description else '')
+                  issuetype=dict(id=str(issue_type.id)),
+                  components=[dict(id=str(component.id)) for component in components],
+                  fixVersions=[dict(id=str(version.id)) for version in versions],
+                  summary=summary, description=description[0] if description else '')
     if assignee:
       fields['assignee'] = dict(name=assignee)
+    if not versions:
+        fields.pop('fixVersions')
+    if not components:
+        fields.pop('components')
+    if additional_fields:
+        for key, value in additional_fields:
+            fields[get_custom_fields()[key]] = [value]
     issue = jira.create_issue(fields=fields)
     return issue
 
@@ -193,4 +210,5 @@ issue_mappings = Munch(Rank=lambda issue: int(issue.fields().customfield_10700),
                        Components=lambda issue: [item.name for item in issue.fields().components],
                        IssueLinks=lambda issue: issue.fields().issuelinks,
                        SubTasks=lambda issue: issue.fields().subtasks,
+                       Attachments=lambda issue: issue.fields().attachment,
                        )

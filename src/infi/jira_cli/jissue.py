@@ -8,7 +8,7 @@ Usage:
     jissue stop {issue}
     jissue show {issue}
     jissue reopen {issue}
-    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short] [--assign-to-me]
+    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short] [--assign-to-me] [--field=<field-name-and-value...>]
     jissue comment <message> {issue}
     jissue commit [<message>] {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]
@@ -21,37 +21,38 @@ Usage:
     jissue config set <jira_fqdn> <username> <password>
 
 Options:
-    list                         list open issues in project/version
-    search                       search for issues
-    start                        mark work started on issue
-    stop                         mark work stopped on issue
-    show                         pretty-print issue details
-    reopen                       re-open issue
-    create                       create new issue
-    comment                      add comment to issue
-    commit                       do a Git commit with the issue details in the commit message
-    resolve                      mark issue as resolved
-    link                         create link between issues
-    label                        add labels to issue
-    assign                       assign issue to user
-    inventory                    list components, versions, transisions in project
-    filters                      list issue search filters
-    config                       get/set jira configuration
-    <project>                    project key {project_default}
-    <issue>                      issue key {issue_default}
-    <details>                    multiline-string, first line is summary, other is description
-    <link-type>                  link type string [default: Duplicate]
-    <target-issue>               target issue
-    <issue-type>                 issue type string
-    --component=<component>      component name {component_default}
-    --fix-version=<version>      version string {version_default}
-    --file=<file>...             files/directories to commit
-    --resolve-as=<resolution>    resolution string [default: Fixed]
-    --sort-by=<column-name>      column to sort by [default: Rank]
-    --assignee=<assignee>        jira user name
-    --filter=<filter>            name of a favorite filter
-    --short                      print just the issue key, useful for scripting
-    --help                       show this screen
+    list                                list open issues in project/version
+    search                              search for issues
+    start                               mark work started on issue
+    stop                                mark work stopped on issue
+    show                                pretty-print issue details
+    reopen                              re-open issue
+    create                              create new issue
+    comment                             add comment to issue
+    commit                              do a Git commit with the issue details in the commit message
+    resolve                             mark issue as resolved
+    link                                create link between issues
+    label                               add labels to issue
+    assign                              assign issue to user
+    inventory                           list components, versions, transisions in project
+    filters                             list issue search filters
+    config                              get/set jira configuration
+    <project>                           project key {project_default}
+    <issue>                             issue key {issue_default}
+    <details>                           multiline-string, first line is summary, other is description
+    <link-type>                         link type string [default: Duplicate]
+    <target-issue>                      target issue
+    <issue-type>                        issue type string
+    --component=<component>             component name {component_default}
+    --fix-version=<version>             version string {version_default}
+    --file=<file>...                    files/directories to commit
+    --resolve-as=<resolution>           resolution string [default: Fixed]
+    --sort-by=<column-name>             column to sort by [default: Rank]
+    --assignee=<assignee>               jira user name
+    --filter=<filter>                   name of a favorite filter
+    --field=<field-name-and-value...>   in format name:=value
+    --short                             print just the issue key, useful for scripting
+    --help                              show this screen
 """
 
 
