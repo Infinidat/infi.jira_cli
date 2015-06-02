@@ -28,6 +28,11 @@ def get_custom_fields():
 
 
 @cached_function
+def get_custom_fields_schema():
+    return {item['name']: item['schema']['custom'] for item in get_jira().fields() if item['custom']}
+
+
+@cached_function
 def get_issues__assigned_to_user(user, project=None):
     return get_jira().search_issues(ASSIGNED_ISSUES.format("project={} AND ".format(project) if project else '', user))
 
@@ -129,6 +134,13 @@ def get_next_release_name_in_project(key):
     return ''
 
 
+def get_custom_field_value_id(project_key, issue_type_name, key, value):
+    result = get_jira().createmeta(issuetypeNames=[issue_type_name], projectKeys=[project_key], expand=['projects.issuetypes.fields'])
+    values = result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[key]]['allowedValues']
+    [value_id] = [item['id'] for item in values if item['value'] == value]
+    return value_id
+
+
 def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, additional_fields=None):
     jira = get_jira()
     project = jira.project(project_key)
@@ -153,7 +165,8 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
         fields.pop('components')
     if additional_fields:
         for key, value in additional_fields:
-            fields[get_custom_fields()[key]] = [value]
+            fields[get_custom_fields()[key]] = {'value': value, 'id': get_custom_field_value_id(project_key, issue_type_name, key, value)} if \
+                                                'select' in get_custom_fields_schema()[key] else [value]
     issue = jira.create_issue(fields=fields)
     return issue
 
