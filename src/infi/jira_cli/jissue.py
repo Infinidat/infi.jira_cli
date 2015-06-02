@@ -8,7 +8,7 @@ Usage:
     jissue stop {issue}
     jissue show {issue}
     jissue reopen {issue}
-    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short] [--assign-to-me]
+    jissue create <issue-type> <details> {project} [--component=<component>] [--fix-version=<version>] [--short] [--assign-to-me] [--field=<field-name-and-value...>]
     jissue comment <message> {issue}
     jissue commit [<message>] {issue} [--file=<file>...]
     jissue resolve {issue} [--resolve-as=<resolution>] [--fix-version=<version>]

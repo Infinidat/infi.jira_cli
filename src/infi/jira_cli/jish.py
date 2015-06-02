@@ -4,7 +4,7 @@ Usage:
     jish component <component>
     jish version <version>
     jish workon <issue>
-    jish create <issue-type> <details> [--assign-to-me]
+    jish create <issue-type> <details> [--assign-to-me] [--field=<field-name-and-value...>]
     jish deactivate
 
  Options:
@@ -73,6 +73,7 @@ def set_environment_variables(arguments, environment_variables):
 
 
 def _jish(argv):
+    from .config import Configuration
     try:
         arguments = _get_arguments(argv)
     except SystemError, e:
@@ -89,13 +90,10 @@ def _jish(argv):
                 environ.get('JISSUE_COMPONENT') or None,
                 environ.get('JISSUE_VERSION'),
                 arguments.get("<details>"))
-        if arguments.get("--assign-to-me"):
-            from .config import Configuration
-            args = args + (Configuration.from_file().username, )
-        else:
-            args = args + (None, )
+        kwargs = {'assignee': Configuration.from_file().username if arguments.get("--assign-to-me") else "-1",
+                  'additional_fields': [item.split(':=') for item in arguments.get("--field", list())]}
         arguments.workon = True
-        arguments['<issue>'] = jira_adapter.create_issue(*args).key
+        arguments['<issue>'] = jira_adapter.create_issue(*args, **kwargs).key
         set_environment_variables(arguments, environment_variables)
     for key, value in environment_variables.iteritems():
         print >> stdout, "export {}={}\n".format(key, value)
