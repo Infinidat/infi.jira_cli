@@ -115,8 +115,11 @@ def get_next_release_name_for_issue(key):
 @cached_function
 def get_next_release_name_in_project(key):
     project = get_project(key)
-    return sorted([version for version in project.versions if not version.released],
-                   key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))[0].name
+    next_releases = sorted([version for version in project.versions if not version.released],
+                           key=lambda version: from_jira_formatted_date(getattr(version, "releaseDate", '2121-12-12')))
+    if next_releases:
+      return next_releases[0].name
+    return ''
 
 
 def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None):
@@ -193,4 +196,5 @@ issue_mappings = Munch(Rank=lambda issue: int(issue.fields().customfield_10700),
                        Components=lambda issue: [item.name for item in issue.fields().components],
                        IssueLinks=lambda issue: issue.fields().issuelinks,
                        SubTasks=lambda issue: issue.fields().subtasks,
+                       Attachments=lambda issue: issue.fields().attachment,
                        )

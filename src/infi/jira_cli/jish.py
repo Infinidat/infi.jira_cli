@@ -52,7 +52,7 @@ def set_environment_variables_for_project(arguments, environment_variables):
     project_version = arguments.get("<version>") if not arguments.project else next_version \
                       or (environ.get("JISSUE_VERSION") if not arguments.project else '') \
                       or next_version
-    if project_version not in [item.name for item in project.versions]:
+    if project_version not in [item.name for item in project.versions] and not arguments.get("--no-version"):
         print >> stderr, "no such version", project_version
         raise SystemExit(1)
     project_component = arguments.get("<component>") or environ.get("JISSUE_COMPONENT")
