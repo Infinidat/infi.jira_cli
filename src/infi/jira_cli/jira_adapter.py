@@ -8,7 +8,14 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 @cached_function
 def get_jira():
     from .config import Configuration
-    from jira import JIRA
+    from jira import JIRA as _JIRA
+
+    class JIRA(_JIRA):
+        def __del__(self):
+            # workaround for silencing the exception thrown upon exit to stderr
+            # Exception AttributeError: "'NoneType' object has no attribute 'version_info'" in <bound method JIRA.__del__ of <jira.client.JIRA object at 0x10e46a250>> ignored
+            pass
+
     config = Configuration.from_file()
     options = dict(server="http://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
