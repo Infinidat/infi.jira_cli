@@ -13,7 +13,9 @@ def get_api():
     from .config import Configuration
     from jira import JIRA
     config = Configuration.from_file()
-    return JSONRestSender("http://%s/rest" % config.jira_fqdn, config.username, config.password)
+    api = JSONRestSender("http://%s/rest" % config.jira_fqdn)
+    api.set_basic_authorization(config.username, config.password)
+    return api
 
 
 def get_fields():
@@ -31,7 +33,7 @@ def get_options_for_custom_field(field_id):
 
 
 def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=True):
-    options = get_api().get_options_for_custom_field(field_id)
+    options = get_options_for_custom_field(field_id)
 
     field_options = {item['optionvalue']: item for item in options}
     # we shouldn't delete old values, as existing issues can use them
@@ -47,7 +49,7 @@ def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=T
 
 
 def sort_custom_dropdown_field(field_id, values):
-    sorted_options = sorted(key=lambda item: item['optionvalue'], reverse=True)
+    sorted_options = sorted(values, key=lambda item: item['optionvalue'], reverse=True)
     for option in sorted_options:
         uri = REORDER_URI.format(customfield_id=field_id, option_id=option['id'])
         get_api().post(uri, data=dict(position="First"))

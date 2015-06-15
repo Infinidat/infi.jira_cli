@@ -1,4 +1,4 @@
-"""jissue
+"""jadmin
 infinidat jira admin command-line tool
 
 Usage:
@@ -29,12 +29,13 @@ def update_dropdown_list(field_name, values_filepath, sort_options_alphabeticall
 
 @exception_handler
 def _jadmin(argv, environ=dict()):
+    from copy import deepcopy
     arguments = _get_arguments(argv, dict(deepcopy(environ)))
     if arguments['custom-field'] and ['update-dropdown-list']:
-        update_dropdown_list(arguments['<field-name>'], arguments['csv-filepath'], arguments['--sort-alphabetically'])
+        update_dropdown_list(arguments['<field-name>'], arguments['<values-filepath>'], arguments['--sort-alphabetically'])
 
 
 def main():
     from os import environ
     from sys import argv
-    return _jissue(argv[1:], environ)
+    return _jadmin(argv[1:], environ)
