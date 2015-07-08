@@ -80,31 +80,42 @@ def _get_arguments(argv, environ):
     return arguments
 
 
-def _jissue(argv, environ=dict()):
+def exception_handler(func):
     from sys import stderr
-    from copy import deepcopy
     from jira import JIRAError
     from infi.execute import ExecutionError
-    from .actions import choose_action
+    from infi.pyutils.decorators import wraps
     from .config import ConfigurationError
     from docopt import DocoptExit
-    try:
-        arguments = _get_arguments(argv, dict(deepcopy(environ)))
-        action = choose_action(argv)
-        return action(arguments) or 0
-    except DocoptExit as e:
-        print >> stderr, e
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs) or 0
+        except DocoptExit as e:
+            print >> stderr, e
+            return 1
+        except SystemExit as e:
+            print >> stderr, e
+            return 0
+        except JIRAError as e:
+            print >> stderr, e
+        except ExecutionError as e:
+            print >> stderr, e.result.get_stderr()
+        except ConfigurationError as e:
+            print >> stderr, e.message
         return 1
-    except SystemExit as e:
-        print >> stderr, e
-        return 0
-    except JIRAError as e:
-        print >> stderr, e
-    except ExecutionError as e:
-        print >> stderr, e.result.get_stderr()
-    except ConfigurationError as e:
-        print >> stderr, e.message
-    return 1
+    return wrapper
+
+
+@exception_handler
+def _jissue(argv, environ=dict()):
+    from copy import deepcopy
+    from .actions import choose_action
+
+    arguments = _get_arguments(argv, dict(deepcopy(environ)))
+    action = choose_action(argv)
+    return action(arguments)
 
 
 def main():
