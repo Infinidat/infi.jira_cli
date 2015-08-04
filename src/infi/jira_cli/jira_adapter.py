@@ -134,6 +134,12 @@ def get_next_release_name_in_project(key):
     return ''
 
 
+def get_custom_field_values(issue_key, customfield_name):
+    result = get_jira().createmeta(issuetypeNames=[issue_mappings.Type(get_issue(issue_key))], projectKeys=[issue_key.split('-')[0]], expand=['projects.issuetypes.fields'])
+    return {item['value']: item['id'] for
+            item in result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[customfield_name]]['allowedValues']}
+
+
 def get_custom_field_value_id(project_key, issue_type_name, key, value):
     result = get_jira().createmeta(issuetypeNames=[issue_type_name], projectKeys=[project_key], expand=['projects.issuetypes.fields'])
     values = result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[key]]['allowedValues']
