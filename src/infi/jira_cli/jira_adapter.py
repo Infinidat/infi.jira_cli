@@ -17,7 +17,7 @@ def get_jira():
             pass
 
     config = Configuration.from_file()
-    options = dict(server="http://{0}".format(config.jira_fqdn))
+    options = dict(server="https://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
     return JIRA(options, basic_auth=basic_auth)
 

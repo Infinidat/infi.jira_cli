@@ -13,7 +13,7 @@ def get_api():
     from .config import Configuration
     from jira import JIRA
     config = Configuration.from_file()
-    api = JSONRestSender("http://%s/rest" % config.jira_fqdn)
+    api = JSONRestSender("https://%s/rest" % config.jira_fqdn)
     api.set_basic_authorization(config.username, config.password)
     return api
 
