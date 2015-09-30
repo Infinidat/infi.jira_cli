@@ -1,1 +1,1 @@
-recursive-include src jish.zsh
+recursive-include src jish.zsh release_notes.html
