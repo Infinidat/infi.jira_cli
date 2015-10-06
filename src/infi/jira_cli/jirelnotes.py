@@ -6,12 +6,14 @@ Usage:
     jirelnotes publish {project} [--include-next-release]
     jirelnotes notify {project} {version} [<other-versions-included-in-this-releases>...] [--dry-run]
     jirelnotes fetch {project}
+    jirelnotes config set <confluence_fqdn>
 
 Options:
     show                                 show the generated release notes
     publish                              publish the release notes to the wiki
     fetch                                print the release note from the wiki
     notify                               find linked issues and put comments
+    config set                           set the Confluence IP or hostname. The credentials are taken from jissue config
     --project=PROJECT                    project key {project_default}
 """
 
@@ -213,6 +215,13 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
             comment_on_issue(related_ticket.key, comment)
 
 
+def config_set(confluence_fqdn):
+    from .config import Configuration
+    config = Configuration.from_file()
+    config.confluence_fqdn = confluence_fqdn
+    config.save()
+
+
 def do_work(arguments):
     project_key = arguments['--project']
     project_version = arguments.get('--release')
@@ -225,6 +234,8 @@ def do_work(arguments):
     elif arguments['notify']:
         other_versions = arguments.get('<other-versions-included-in-this-releases>', list())
         notify_related_tickets(project_key, project_version, other_versions, arguments['--dry-run'])
+    elif arguments['config'] and arguments['set']:
+        config_set(arguments['<confluence_fqdn>'])
 
 
 def _jiject(argv, environ):
