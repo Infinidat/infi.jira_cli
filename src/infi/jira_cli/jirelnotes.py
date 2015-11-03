@@ -89,7 +89,7 @@ def get_release_notes_contents_for_specfic_version(project, version):
     known_issues_query = "project={0} AND {1!r} IS NOT EMPTY AND (" \
                          "(fixVersion IN ('known issues') AND status IN (Open, Reopened)) OR " \
                          "(affectedVersion in ({2!r})) OR " \
-                         "(labels=known-issue AND status WAS IN (Resolved) ON {3} AND fixVersion NOT IN ({2!r})))"
+                         "(labels=known-issue AND status WAS IN (Resolved) ON {3} AND fixVersion > {2!r}))"
     known_issues_query = known_issues_query.format(project.key, RELEASE_NOTES_TITLE_KEY,
                                                    str(version.name), release_date or 'now()')
     resolved_issues = list(get_jira().search_issues(base_query))
