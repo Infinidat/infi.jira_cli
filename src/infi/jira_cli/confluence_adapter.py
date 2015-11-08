@@ -6,6 +6,8 @@ def get_confluence():
     from .config import Configuration
     from json_rest import JSONRestSender
     config = Configuration.from_file()
+    if config.confluence_fqdn is None:
+        raise Exception("Confluence FQDN not set in configuration file. Run 'jirelnotes config set'")
     client = JSONRestSender("https://{0}/rest".format(config.confluence_fqdn))
     client.set_basic_authorization(config.username, config.password)
     return client
