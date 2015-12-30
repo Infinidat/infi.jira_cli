@@ -186,7 +186,7 @@ def create_link(link_type_name, from_key, to_key):
     jira.create_issue_link(**kwargs)
 
 
-def sgearch_issues(query, maxResults=2000, expand=None):
+def search_issues(query, maxResults=2000, expand=None):
     jira = get_jira()
     return jira.search_issues(query, maxResults=maxResults, expand=expand)
 

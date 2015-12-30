@@ -200,14 +200,15 @@ def inventory(arguments):
 
 
 def history(arguments):
-    from .jira_adapter import get_jira
+    from .jira_adapter import get_jira, search_issues
     from string import capwords
     from pprint import pprint
     project_key = arguments.get("<project>")
     jira = get_jira()
     items = []
+    issues = search_issues('project={}'.format(project_key), expand='changelog')
     print(','.join(['key', 'datetime', 'from', 'to']))
-    for issue in jira.search_issues('project={}'.format(project_key), expand='changelog'):
+    for issue in issues:
         for history in issue.changelog().histories:
             for change in history.items:
                 if change.field == 'status':
