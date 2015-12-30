@@ -211,7 +211,7 @@ def history(arguments):
     for issue in issues:
         for history in issue.changelog().histories:
             for change in history.items:
-                if change.field == 'status':
+                if change.field == 'status' and change.fromString != change.toString:
                     print(','.join([issue.key, history.created, change.fromString, change.toString]))
 
 
