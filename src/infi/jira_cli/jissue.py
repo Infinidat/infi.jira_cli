@@ -16,6 +16,7 @@ Usage:
     jissue label {issue} --label=<label>...
     jissue assign {issue} (--assignee=<assignee> | --automatic | --to-no-one | --to-me)
     jissue inventory {project}
+    jissue history {project}
     jissue filters
     jissue config show
     jissue config set <jira_fqdn> <username> <password>
@@ -35,6 +36,7 @@ Options:
     label                               add labels to issue
     assign                              assign issue to user
     inventory                           list components, versions, transisions in project
+    history                             show issue transion history
     filters                             list issue search filters
     config                              get/set jira configuration
     <project>                           project key {project_default}

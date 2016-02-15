@@ -199,6 +199,23 @@ def inventory(arguments):
             "Resolve types": resolution_names})
 
 
+def history(arguments):
+    from .jira_adapter import get_jira, search_issues
+    from string import capwords
+    from pprint import pprint
+    project_key = arguments.get("<project>")
+    jira = get_jira()
+    items = []
+    issues = search_issues('project={}'.format(project_key), expand='changelog')
+    print(','.join(['key', 'datetime', 'from', 'to']))
+    for issue in issues:
+        for history in issue.changelog().histories:
+            for change in history.items:
+                if change.field == 'status' and change.fromString != change.toString:
+                    print(','.join([issue.key, history.created, change.fromString, change.toString]))
+
+
+
 def label(arguments):
     from .jira_adapter import add_labels_to_issue
     add_labels_to_issue(arguments.get("<issue>"), arguments.get("--label"))
@@ -252,6 +269,7 @@ def get_mappings():
         resolve=resolve,
         link=link,
         inventory=inventory,
+        history=history,
         assign=assign,
         search=search,
         label=label,
