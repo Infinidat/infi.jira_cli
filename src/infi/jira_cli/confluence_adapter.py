@@ -46,7 +46,7 @@ def update_page_contents(page_id, body):
     page = get_confluence().get('/api/content/{}?expand=body.view,version.number,ancestors'.format(page_id))
     data = dict(version=dict(number=page['version']['number']+1),
                 id=page['id'], title=page['title'], type='page',
-                body=dict(representation='storage', storage=dict(value=body)))
+                body=dict(storage=dict(representation='storage', value=body)))
     if page['ancestors']:
         data['ancestors'] = [dict(id=page['ancestors'][-1]['id'])]
     get_confluence().put('api/content/%s' % page_id, data=data)
