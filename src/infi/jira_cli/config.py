@@ -1,8 +1,8 @@
 from schematics.models import Model
 from schematics.types import StringType
-from os import path
+from os import path, getenv
 
-CONFIGFILE_PATH = path.expanduser(path.join("~", ".jissue"))
+CONFIGFILE_PATH_DEFAULT = path.expanduser(path.join("~", ".jissue"))
 
 
 class ConfigurationError(Exception):
@@ -16,11 +16,15 @@ class Configuration(Model):
     password = StringType(required=True)
 
     @classmethod
-    def from_file(cls, filepath=None):
+    def get_filepath(cls):
+        return getenv("INFI_JIRA_CLI_CONFIG_PATH", CONFIGFILE_PATH_DEFAULT)
+
+    @classmethod
+    def from_file(cls):
         from json import load
-        if not path.exists(CONFIGFILE_PATH):
+        filepath = cls.get_filepath()
+        if not path.exists(filepath):
             raise ConfigurationError("Configuration file does not exist, run 'jissue config set'")
-        filepath = filepath or CONFIGFILE_PATH
         with open(filepath) as fd:
             data = load(fd)
         self = cls()
@@ -28,9 +32,9 @@ class Configuration(Model):
             setattr(self, key, value)
         return self
 
-    def save(self, filepath=None):
+    def save(self):
         from json import dump
-        filepath = filepath or CONFIGFILE_PATH
+        filepath = self.get_filepath()
         serialize = getattr(self, "to_python") if hasattr(self, "to_python") else getattr(self, "serialize")
         with open(filepath, 'w') as fd:
             dump(serialize(), fd, indent=4)

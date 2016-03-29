@@ -47,6 +47,9 @@ Set-up your JIRA information
 
     jissue config set jira.your.domain your-username your-password
 
+The configuration pathname defaults to `~/.jissue`. You can
+override it with the `INFI_JIRA_CLI_CONFIG_PATH` environment
+variable.
 
 Checking out the code
 =====================
