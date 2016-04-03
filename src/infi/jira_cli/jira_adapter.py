@@ -23,6 +23,16 @@ def get_jira():
 
 
 @cached_function
+def get_json_rest():
+    from .config import Configuration
+    from json_rest import JSONRestSender
+    config = Configuration.from_file()
+    json_rest = JSONRestSender("https://{0}/rest".format(config.jira_fqdn))
+    json_rest.set_basic_authorization(config.username, config.password)
+    return json_rest
+
+
+@cached_function
 def get_custom_fields():
     return {item['name']: item['id'] for item in get_jira().fields() if item['custom']}
 
@@ -134,10 +144,20 @@ def get_next_release_name_in_project(key):
     return ''
 
 
-def get_custom_field_values(issue_key, customfield_name):
-    result = get_jira().createmeta(issuetypeNames=[issue_mappings.Type(get_issue(issue_key))], projectKeys=[issue_key.split('-')[0]], expand=['projects.issuetypes.fields'])
-    return {item['value']: item['id'] for
-            item in result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[customfield_name]]['allowedValues']}
+@cached_function
+def get_custom_field_values(customfield_name):
+    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
+    customfield_id = get_custom_fields()[customfield_name]
+    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    return [item['optionvalue'] for item in options]
+
+
+@cached_function
+def get_enabled_custom_field_values(customfield_name):
+    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
+    customfield_id = get_custom_fields()[customfield_name]
+    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    return [item['optionvalue'] for item in options if not item['disabled']]
 
 
 def get_custom_field_value_id(project_key, issue_type_name, key, value):
@@ -145,6 +165,18 @@ def get_custom_field_value_id(project_key, issue_type_name, key, value):
     values = result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[key]]['allowedValues']
     [value_id] = [item['id'] for item in values if item['value'] == value]
     return value_id
+
+
+def _compute_value(project_key, issue_type_name, key, value):
+    def _translate(value):
+        if 'select' in get_custom_fields_schema()[key]:
+          return {'value': value, 'id': get_custom_field_value_id(project_key, issue_type_name, key, value)}
+        return value
+
+    if isinstance(value, (list, tuple)):
+      return [_translate(item) for item in value]
+    result = _translate(value)
+    return result if isinstance(result, dict) else [result]
 
 
 def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, additional_fields=None):
@@ -171,8 +203,7 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
         fields.pop('components')
     if additional_fields:
         for key, value in additional_fields:
-            fields[get_custom_fields()[key]] = {'value': value, 'id': get_custom_field_value_id(project_key, issue_type_name, key, value)} if \
-                                                'select' in get_custom_fields_schema()[key] else [value]
+            fields[get_custom_fields()[key]] = _compute_value(project_key, issue_type_name, key, value)
     issue = jira.create_issue(fields=fields)
     return issue
 
@@ -231,3 +262,17 @@ issue_mappings = Munch(Rank=lambda issue: int(issue.fields().customfield_10700),
                        SubTasks=lambda issue: issue.fields().subtasks,
                        Attachments=lambda issue: issue.fields().attachment,
                        )
+
+
+@cached_function
+def is_user_exists(username):
+    return any(user.key == username for user in get_jira().search_users(username))
+
+
+@cached_function
+def get_user_by_name(name):
+     users = get_jira().search_users(name)
+     return users[0].key if len(users) == 1 else None
+
+
+from .custom_field_editor import get_options_for_custom_field, get_custom_field_id_by_name
