@@ -60,5 +60,3 @@ def wipe_all_options_in_custom_dropdown_field(field_id):
     for option in options:
         uri = DELETE_URI.format(customfield_id=field_id, option_id=option['id'])
         get_api().delete(uri)
-
-
