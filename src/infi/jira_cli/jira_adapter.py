@@ -171,12 +171,14 @@ def _compute_value(project_key, issue_type_name, key, value):
     def _translate(value):
         if 'select' in get_custom_fields_schema()[key]:
           return {'value': value, 'id': get_custom_field_value_id(project_key, issue_type_name, key, value)}
+        if 'userpicker' in get_custom_fields_schema()[key]:
+          return {'name': value}
         return value
 
     if isinstance(value, (list, tuple)):
       return [_translate(item) for item in value]
     result = _translate(value)
-    return result if isinstance(result, dict) else [result]
+    return result if isinstance(result, dict) else result
 
 
 def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, additional_fields=None):
@@ -194,7 +196,9 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
                   issuetype=dict(id=str(issue_type.id)),
                   components=[dict(id=str(component.id)) for component in components],
                   fixVersions=[dict(id=str(version.id)) for version in versions],
-                  summary=summary, description=description[0] if description else '')
+                  summary=summary, description=description[0] if description else None)
+    if not fields['description']:
+      fields.pop('description')
     if assignee:
       fields['assignee'] = dict(name=assignee)
     if not versions:
@@ -202,7 +206,7 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
     if not components:
         fields.pop('components')
     if additional_fields:
-        for key, value in additional_fields:
+        for key, value in additional_fields.items():
             fields[get_custom_fields()[key]] = _compute_value(project_key, issue_type_name, key, value)
     issue = jira.create_issue(fields=fields)
     return issue
