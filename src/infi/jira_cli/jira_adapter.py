@@ -88,7 +88,7 @@ def matches(str_a, str_b):
     return str_a is not None and str_b is not None and str_a.lower() == str_b.lower()
 
 
-def transition_issue(key, transition_string, additional_fields, id_lookup_method=None):
+def transition_issue(key, transition_string, additional_fields, id_lookup_method=None, **kwargs):
     jira = get_jira()
     issue = jira.issue(key)
     issue_type_name = issue_mappings.Type(issue)
@@ -97,9 +97,12 @@ def transition_issue(key, transition_string, additional_fields, id_lookup_method
     fields = dict()
     if additional_fields:
         for key, value in additional_fields.items():
-            fields[get_custom_fields()[key]] = _compute_value(key, value, id_lookup_method)
+            if key in ('issuelinks', ):
+                fields[key] = value
+            else:
+                fields[get_custom_fields()[key]] = _compute_value(key, value, id_lookup_method)
     logger.debug("calling transition_issue(issue={issue!r}, transition={transition!r}, fields={fields!r})".format(issue=issue, transition=transition, fields=fields))
-    jira.transition_issue(issue=issue.key, transition=transition, fields=fields)
+    jira.transition_issue(issue=issue.key, transition=transition, fields=fields, **kwargs)
 
 
 def resolve_issue(key, resolution_string, fix_versions_strings):
@@ -183,6 +186,8 @@ def get_custom_field_value_id_from_createmeta(project_key, issue_type_name, key,
 
 def _compute_value(key, value, id_lookup_method):
     def _translate(value):
+        if key in ('issuelinks', ):
+          return value
         if 'select' in get_custom_fields_schema()[key]:
           return {'value': value}
         if 'radiobuttons' in get_custom_fields_schema()[key]:
