@@ -1,6 +1,13 @@
 from infi.pyutils.lazy import cached_function, clear_cache
 from jira import JIRAError
 from munch import Munch
+from logging import getLogger
+from functools import partial
+
+
+logger = getLogger(__name__)
+
+
 CURRENT_USER = "currentUser()"
 ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority DESC, created ASC"
 
@@ -81,11 +88,21 @@ def matches(str_a, str_b):
     return str_a is not None and str_b is not None and str_a.lower() == str_b.lower()
 
 
-def transition_issue(key, transition_string, fields):
+def transition_issue(key, transition_string, additional_fields, id_lookup_method=None, **kwargs):
     jira = get_jira()
     issue = jira.issue(key)
+    issue_type_name = issue_mappings.Type(issue)
+    project_key = issue.fields().project.key
     [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
-    jira.transition_issue(issue=issue.key, transition=transition, fields=fields)
+    fields = dict()
+    if additional_fields:
+        for key, value in additional_fields.items():
+            if key in ('issuelinks', ):
+                fields[key] = value
+            else:
+                fields[get_custom_fields()[key]] = _compute_value(key, value, id_lookup_method)
+    logger.debug("calling transition_issue(issue={issue!r}, transition={transition!r}, fields={fields!r})".format(issue=issue, transition=transition, fields=fields))
+    jira.transition_issue(issue=issue.key, transition=transition, fields=fields, **kwargs)
 
 
 def resolve_issue(key, resolution_string, fix_versions_strings):
@@ -160,26 +177,34 @@ def get_enabled_custom_field_values(customfield_name):
     return [item['optionvalue'] for item in options if not item['disabled']]
 
 
-def get_custom_field_value_id(project_key, issue_type_name, key, value):
+def get_custom_field_value_id_from_createmeta(project_key, issue_type_name, key, value):
     result = get_jira().createmeta(issuetypeNames=[issue_type_name], projectKeys=[project_key], expand=['projects.issuetypes.fields'])
     values = result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[key]]['allowedValues']
     [value_id] = [item['id'] for item in values if item['value'] == value]
     return value_id
 
 
-def _compute_value(project_key, issue_type_name, key, value):
+def _compute_value(key, value, id_lookup_method):
     def _translate(value):
+        if key in ('issuelinks', ):
+          return value
         if 'select' in get_custom_fields_schema()[key]:
-          return {'value': value, 'id': get_custom_field_value_id(project_key, issue_type_name, key, value)}
+          return {'value': value}
+        if 'radiobuttons' in get_custom_fields_schema()[key]:
+          return {'id': id_lookup_method(key, value)}
+        if 'multicheckboxes' in get_custom_fields_schema()[key]:
+          return {'id': id_lookup_method(key, value)}
+        if 'userpicker' in get_custom_fields_schema()[key]:
+          return {'name': value}
         return value
 
     if isinstance(value, (list, tuple)):
       return [_translate(item) for item in value]
     result = _translate(value)
-    return result if isinstance(result, dict) else [result]
+    return result if isinstance(result, dict) else result
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, additional_fields=None):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, parent=None, additional_fields=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
@@ -194,16 +219,21 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
                   issuetype=dict(id=str(issue_type.id)),
                   components=[dict(id=str(component.id)) for component in components],
                   fixVersions=[dict(id=str(version.id)) for version in versions],
-                  summary=summary, description=description[0] if description else '')
+                  summary=summary, description=description[0] if description else None)
+    if not fields['description']:
+      fields.pop('description')
     if assignee:
       fields['assignee'] = dict(name=assignee)
+    if parent:
+      fields['parent'] = dict(key=parent)
     if not versions:
         fields.pop('fixVersions')
     if not components:
         fields.pop('components')
     if additional_fields:
-        for key, value in additional_fields:
-            fields[get_custom_fields()[key]] = _compute_value(project_key, issue_type_name, key, value)
+        for key, value in additional_fields.items():
+            id_lookup_method = partial(get_custom_field_value_id_from_createmeta, project_key=project_key, issue_type_name=issue_type_name)
+            fields[get_custom_fields()[key]] = _compute_value(key, value, id_lookup_method)
     issue = jira.create_issue(fields=fields)
     return issue
 
