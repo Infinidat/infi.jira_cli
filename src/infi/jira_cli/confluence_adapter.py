@@ -42,6 +42,11 @@ def get_page_contents(page_id):
     return page['body']['view']['value'].replace(u'\xc3\x82', '').replace(u'\xc2\xa0', '')
 
 
+def get_page_storage(page_id):
+    page = get_confluence().get('/api/content/{}?expand=body.storage,version.number'.format(page_id))
+    return page['body']['storage']['value'].replace(u'\xc3\x82', '').replace(u'\xc2\xa0', '')
+
+
 def update_page_contents(page_id, body):
     page = get_confluence().get('/api/content/{}?expand=body.view,version.number,ancestors'.format(page_id))
     data = dict(version=dict(number=page['version']['number']+1),

@@ -115,7 +115,7 @@ def render_release_notes(project_key, project_version, include_next_release, pag
     from pkg_resources import resource_string
     from .jira_adapter import get_project, get_version, get_jira, issue_mappings, get_custom_fields
     from .jira_adapter import get_next_release_name_in_project
-    from .confluence_adapter import iter_attachments, get_page_contents
+    from .confluence_adapter import iter_attachments, get_page_contents, get_page_storage
     template = Template(resource_string('infi.jira_cli', 'release_notes.html'))
     project = get_project(project_key)
     real_versions = [version for version in reversed(project.versions) if
@@ -125,8 +125,8 @@ def render_release_notes(project_key, project_version, include_next_release, pag
     attachments = list(iter_attachments(page_id))
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
     return template.render(project=project, releases=exposed_releases, page_id=page_id, attachments=attachments,
-                           header=get_page_contents(header_id) if header_id else None,
-                           footer=get_page_contents(footer_id) if footer_id else None)
+                           header=get_page_storage(header_id) if header_id else None,
+                           footer=get_page_storage(footer_id) if footer_id else None)
 
 
 def get_release_notes(project_key, project_version, include_next_release):
