@@ -60,11 +60,16 @@ def _get_arguments(argv, environ):
     return arguments
 
 
-def get_issue_details(issue):
+def get_field(issue, key):
     from .jira_adapter import get_custom_fields
+    result = getattr(issue.fields(), get_custom_fields()[key])
+    return result.replace('\r', '') if result else None
+
+
+def get_issue_details(issue):
     return dict(key=issue.key,
-                title=getattr(issue.fields(), get_custom_fields()[RELEASE_NOTES_TITLE_KEY]),
-                description=getattr(issue.fields(), get_custom_fields()[RELEASE_NOTES_DESCRIPTION_KEY]))
+                title=get_field(issue, RELEASE_NOTES_TITLE_KEY),
+                description=get_field(issue, RELEASE_NOTES_DESCRIPTION_KEY))
 
 
 def is_bug(issue):
@@ -98,7 +103,8 @@ def get_release_notes_contents_for_specfic_version(project, version):
         topics = [dict(name="What's new in this release", issues=[get_issue_details(issue) for issue in resolved_issues if is_new_feature(issue)]),
                   dict(name='Improvements', issues=[get_issue_details(issue) for issue in resolved_issues if is_improvement(issue)]),
                   dict(name='Fixed issues', issues=[get_issue_details(issue) for issue in resolved_issues if is_bug(issue)]),
-                  dict(name='Known issues', issues=[get_issue_details(issue) for issue in known_issues])]
+                  dict(name='Known issues', issues=[get_issue_details(issue) for issue in known_issues]),
+                  ]
         return dict(name=version.name, release_date=release_date, topics=topics)
     else:
         return dict()
