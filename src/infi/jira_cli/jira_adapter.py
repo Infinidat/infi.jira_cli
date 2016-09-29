@@ -3,6 +3,11 @@ from jira import JIRAError
 from munch import Munch
 from logging import getLogger
 from functools import partial
+from .rest import BASE_REST_URI, get_auth
+from .config import Configuration
+from .custom_field_editor import GET_URI
+import requests
+import urlparse
 
 
 logger = getLogger(__name__)
@@ -14,7 +19,6 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 
 @cached_function
 def get_jira():
-    from .config import Configuration
     from jira import JIRA as _JIRA
 
     class JIRA(_JIRA):
@@ -27,16 +31,6 @@ def get_jira():
     options = dict(server="https://{0}".format(config.jira_fqdn))
     basic_auth = (config.username, config.password)
     return JIRA(options, basic_auth=basic_auth)
-
-
-@cached_function
-def get_json_rest():
-    from .config import Configuration
-    from json_rest import JSONRestSender
-    config = Configuration.from_file()
-    json_rest = JSONRestSender("https://{0}/rest".format(config.jira_fqdn))
-    json_rest.set_basic_authorization(config.username, config.password)
-    return json_rest
 
 
 @cached_function
@@ -162,18 +156,21 @@ def get_next_release_name_in_project(key):
 
 
 @cached_function
-def get_custom_field_values(customfield_name):
-    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
+def _get_options(customfield_name):
+    config = Configuration.from_file()
     customfield_id = get_custom_fields()[customfield_name]
-    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    options = requests.get(GET_URI.format(fqdn=config.jira_fqdn, customfield_id=customfield_id),
+                           auth=get_auth()).json()
+    return options
+
+
+def get_custom_field_values(customfield_name):
+    options = _get_options(customfield_name)
     return [item['optionvalue'] for item in options]
 
 
-@cached_function
 def get_enabled_custom_field_values(customfield_name):
-    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
-    customfield_id = get_custom_fields()[customfield_name]
-    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    options = _get_options(customfield_name)
     return [item['optionvalue'] for item in options if not item['disabled']]
 
 

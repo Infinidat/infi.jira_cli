@@ -1,7 +1,11 @@
-from json_rest import JSONRestSender
 from infi.pyutils.lazy import cached_function
+from .rest import BASE_REST_URI, get_auth
+from .config import Configuration
+import requests
+import urlparse
 
 
+FIELD_URI = "/api/2/field"
 ADD_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}"
 GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
 REORDER_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}/move"
@@ -9,17 +13,13 @@ DELETE_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfie
 
 
 @cached_function
-def get_api():
-    from .config import Configuration
-    from jira import JIRA
+def get_jira_url(endppoint, *args, **kwargs):
     config = Configuration.from_file()
-    api = JSONRestSender("https://%s/rest" % config.jira_fqdn)
-    api.set_basic_authorization(config.username, config.password)
-    return api
+    return urlparse.join(BASE_REST_URI.format(fqdn=config.jira_fqdn), endpoint)
 
 
 def get_fields():
-    return get_api().get("/api/2/field")
+    return requests.get(get_jira_url(FIELD_URI), auth=get_auth()).json()
 
 
 def get_custom_field_id_by_name(name):
@@ -29,7 +29,7 @@ def get_custom_field_id_by_name(name):
 
 
 def get_options_for_custom_field(field_id):
-    return get_api().get(GET_URI.format(customfield_id=field_id))
+    return requests.get(get_jira_url(GET_URI.format(customfield_id=field_id)), auth=get_auth()).json()
 
 
 def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=True):
@@ -41,7 +41,9 @@ def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=T
 
     for value in new_values:
         data = dict(disabled=False, optionvalue=value)
-        new_option = get_api().post(ADD_URI.format(customfield_id=field_id), data=data)
+        new_option = requests.post(get_jira_url(ADD_URI.format(customfield_id=field_id)),
+                                   auth=get_auth(),
+                                   data=data).json()
         field_options[value] = new_option
 
     if sort_options_alphabetically:
@@ -51,12 +53,13 @@ def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=T
 def sort_custom_dropdown_field(field_id, values):
     sorted_options = sorted(values, key=lambda item: item['optionvalue'], reverse=True)
     for option in sorted_options:
-        uri = REORDER_URI.format(customfield_id=field_id, option_id=option['id'])
-        get_api().post(uri, data=dict(position="First"))
+        uri = get_jira_url(REORDER_URI.format(customfield_id=field_id, option_id=option['id']))
+        requests.post(uri, auth=get_auth(), data=dict(position="First"))
 
 
 def wipe_all_options_in_custom_dropdown_field(field_id):
     options = get_options_for_custom_field(field_id)
     for option in options:
         uri = DELETE_URI.format(customfield_id=field_id, option_id=option['id'])
-        get_api().delete(uri)
+        uri = get_jira_url(DELETE_URI.format(customfield_id=field_id, option_id=option['id'])
+        requests.delete(uri, auth=get_auth())
