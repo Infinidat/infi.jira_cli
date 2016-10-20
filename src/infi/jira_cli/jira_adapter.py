@@ -3,11 +3,13 @@ from jira import JIRAError
 from munch import Munch
 from logging import getLogger
 from functools import partial
-from .rest import BASE_REST_URI, get_auth
 from .config import Configuration
 from .custom_field_editor import GET_URI
 import requests
-import urlparse
+from infi.pyutils.lazy import cached_function
+from .config import Configuration
+from .credential_store import JIRACredentialsStore
+from requests.auth import HTTPBasicAuth
 
 
 logger = getLogger(__name__)
@@ -15,6 +17,19 @@ logger = getLogger(__name__)
 
 CURRENT_USER = "currentUser()"
 ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority DESC, created ASC"
+
+
+@cached_function
+def get_auth(fqdn):
+    config = Configuration.from_file()
+    credential_store = JIRACredentialsStore()
+    credentials = credential_store.get_credentials(fqdn)
+    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+
+
+@cached_function
+def get_headers():
+    return {'Accept': 'application/json'}
 
 
 @cached_function
@@ -29,8 +44,8 @@ def get_jira():
 
     config = Configuration.from_file()
     options = dict(server="https://{0}".format(config.jira_fqdn))
-    basic_auth = (config.username, config.password)
-    return JIRA(options, basic_auth=basic_auth)
+    basic_auth = get_auth(config.jira_fqdn)
+    return JIRA(options, basic_auth=(basic_auth.username, basic_auth.password))
 
 
 @cached_function
@@ -55,7 +70,7 @@ def get_issues__assigned_to_me(project=None):
 
 def add_labels_to_issue(key, labels):
     issue = get_issue(key)
-    labels = set.union(set([unicode(label) for label in labels]), set(issue.fields().labels))
+    labels = set.union(set([str(label) for label in labels]), set(issue.fields().labels))
     issue.update(labels=list(labels))
 
 
@@ -67,7 +82,7 @@ def from_jira_formatted_datetime(formatted_string):
     # http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
     import re
     import datetime
-    return datetime.datetime(*map(int, re.split('[^\d]', formatted_string)[:-1]))
+    return datetime.datetime(*list(map(int, re.split('[^\d]', formatted_string)[:-1])))
 
 
 def from_jira_formatted_date(formatted_string):
@@ -90,7 +105,7 @@ def transition_issue(key, transition_string, additional_fields, id_lookup_method
     [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
     fields = dict()
     if additional_fields:
-        for key, value in additional_fields.items():
+        for key, value in list(additional_fields.items()):
             if key in ('issuelinks', ):
                 fields[key] = value
             else:
@@ -160,7 +175,8 @@ def _get_options(customfield_name):
     config = Configuration.from_file()
     customfield_id = get_custom_fields()[customfield_name]
     options = requests.get(GET_URI.format(fqdn=config.jira_fqdn, customfield_id=customfield_id),
-                           auth=get_auth()).json()
+                           auth=get_auth(config.jira_fqdn),
+                           headers=get_headers()).json()
     return options
 
 
@@ -228,7 +244,7 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
     if not components:
         fields.pop('components')
     if additional_fields:
-        for key, value in additional_fields.items():
+        for key, value in list(additional_fields.items()):
             _id_lookup_method = id_lookup_method or partial(get_custom_field_value_id_from_createmeta, project_key=project_key, issue_type_name=issue_type_name)
             fields[get_custom_fields()[key]] = _compute_value(key, value, _id_lookup_method)
     issue = jira.create_issue(fields=fields)

@@ -95,17 +95,17 @@ def exception_handler(func):
         try:
             return func(*args, **kwargs) or 0
         except DocoptExit as e:
-            print >> stderr, e
+            print(e, file=stderr)
             return 1
         except SystemExit as e:
-            print >> stderr, e
+            print(e, file=stderr)
             return 0
         except JIRAError as e:
-            print >> stderr, e
+            print(e, file=stderr)
         except ExecutionError as e:
-            print >> stderr, e.result.get_stderr()
+            print(e.result.get_stderr(), file=stderr)
         except ConfigurationError as e:
-            print >> stderr, e.message
+            print(e.message, file=stderr)
         return 1
     return wrapper
 

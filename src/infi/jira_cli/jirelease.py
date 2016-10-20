@@ -63,7 +63,7 @@ def pretty_print_project_versions_in_order(project_name):
             continue
         table.add_row([version.name if version.released else version.name + ' **' if getattr(version, 'overdue', False) else version.name + ' *',
                        getattr(version, 'description', ''), getattr(version, 'releaseDate', '')])
-    print(table.get_string())
+    print((table.get_string()))
 
 
 def release_version(project_name, project_version):
@@ -73,7 +73,7 @@ def release_version(project_name, project_version):
     version = get_version(project_name, project_version)
     if version.released:
         raise AssertionError("version already released")
-    unresolved_issue_count = loads(version._session.get(version.self + '/unresolvedIssueCount').text).values()[-1]
+    unresolved_issue_count = list(loads(version._session.get(version.self + '/unresolvedIssueCount').text).values())[-1]
     if unresolved_issue_count:
         raise AssertionError("version has {} unresovled issues".format(unresolved_issue_count))
     if not version.releaseDate:
@@ -93,10 +93,10 @@ def parse_deltastring(string):
     from argparse import ArgumentTypeError
     DELTA_KEYWORD_ARGUMENTS = dict(w="weeks", d="days")
     keyword_argument = DELTA_KEYWORD_ARGUMENTS.get(string[-1] if string else "", "seconds")
-    stripped_string = string.strip(''.join(DELTA_KEYWORD_ARGUMENTS.keys()))
+    stripped_string = string.strip(''.join(list(DELTA_KEYWORD_ARGUMENTS.keys())))
     try:
         return timedelta(**{keyword_argument: abs(int(stripped_string))})
-    except (ValueError, TypeError), msg:
+    except (ValueError, TypeError) as msg:
         raise ValueError("Invalid delta string: {!r}".format(string))
 
 
@@ -200,7 +200,7 @@ def summary(since):
                            version.name if version.released else version.name + ' **' if getattr(version, 'overdue', False) else version.name + ' *',
                            getattr(version, 'description', ''), getattr(version, 'releaseDate', '')])
 
-    print(table.get_string())
+    print((table.get_string()))
 
 
 def do_work(arguments):
@@ -242,19 +242,19 @@ def _jiject(argv, environ):
     try:
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         return do_work(arguments)
-    except DocoptExit, e:
-        print >> stderr, e
+    except DocoptExit as e:
+        print(e, file=stderr)
         return 1
-    except AssertionError, e:
-        print >> stderr, e
+    except AssertionError as e:
+        print(e, file=stderr)
         return 1
-    except SystemExit, e:
-        print >> stderr, e
+    except SystemExit as e:
+        print(e, file=stderr)
         return 0
-    except JIRAError, e:
-        print >> stderr, e
-    except ExecutionError, e:
-        print >> stderr, e.result.get_stderr()
+    except JIRAError as e:
+        print(e, file=stderr)
+    except ExecutionError as e:
+        print(e.result.get_stderr(), file=stderr)
     return 1
 
 
