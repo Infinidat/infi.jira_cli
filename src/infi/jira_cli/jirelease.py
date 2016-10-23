@@ -32,6 +32,7 @@ Options:
     --release=RELEASE                    version string {version_default}
     --since-date=SINCE                   since when [default: today]
 """
+from __future__ import print_function
 
 
 def _get_arguments(argv, environ):

@@ -10,6 +10,7 @@ Usage:
  Options:
     --help   this screen
 """
+from __future__ import print_function
 
 from sys import stderr, stdout
 from . import jira_adapter

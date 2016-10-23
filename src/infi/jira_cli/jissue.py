@@ -56,6 +56,7 @@ Options:
     --short                             print just the issue key, useful for scripting
     --help                              show this screen
 """
+from __future__ import print_function
 
 
 def _get_arguments(argv, environ):

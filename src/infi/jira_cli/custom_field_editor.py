@@ -1,7 +1,10 @@
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
 import requests
-import urllib.parse
+try:
+    from urlparse import urljoin
+except:
+    from urllib.parse import urljoin
 
 
 BASE_REST_URI = "https://{fqdn}/rest/"

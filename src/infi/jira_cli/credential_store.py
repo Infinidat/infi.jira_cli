@@ -2,7 +2,6 @@ from infi.credentials_store import CLICredentialsStore
 from logging import getLogger
 import requests
 from requests.auth import HTTPBasicAuth
-import urllib.parse
 import json
 
 

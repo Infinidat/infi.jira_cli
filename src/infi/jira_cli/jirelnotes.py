@@ -16,6 +16,7 @@ Options:
     config set                           set the Confluence IP or hostname. The credentials are taken from jissue config
     --project=PROJECT                    project key {project_default}
 """
+from __future__ import print_function
 
 RELEASE_NOTES_TITLE_KEY = 'Release Notes Title'
 RELEASE_NOTES_DESCRIPTION_KEY = 'Release Notes Description'

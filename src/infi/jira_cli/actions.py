@@ -1,7 +1,4 @@
-try:
-    from __future__ import print_function
-except:
-    pass
+from __future__ import print_function
 
 
 def format(value, slice=None):
