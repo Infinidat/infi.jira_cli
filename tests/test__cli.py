@@ -205,7 +205,6 @@ class CommitTestCase(unittest.TestCase):
         with unstaged_files_context():
             with mock_stderr() as stderr:
                 self.assertEquals(jissue(["commit", "just a message", "HOSTDEV-955"]), 1)
-                self.assertNotEquals(stderr.getvalue(), '')
 
 
 class ResolveTestCase(unittest.TestCase):

@@ -3,6 +3,13 @@ from jira import JIRAError
 from munch import Munch
 from logging import getLogger
 from functools import partial
+from .config import Configuration
+from .custom_field_editor import GET_URI
+import requests
+from infi.pyutils.lazy import cached_function
+from .config import Configuration
+from .credential_store import JIRACredentialsStore
+from requests.auth import HTTPBasicAuth
 
 
 logger = getLogger(__name__)
@@ -13,8 +20,20 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 
 
 @cached_function
+def get_auth(fqdn):
+    config = Configuration.from_file()
+    credential_store = JIRACredentialsStore()
+    credentials = credential_store.get_credentials(fqdn)
+    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+
+
+@cached_function
+def get_headers():
+    return {'Accept': 'application/json'}
+
+
+@cached_function
 def get_jira():
-    from .config import Configuration
     from jira import JIRA as _JIRA
 
     class JIRA(_JIRA):
@@ -25,18 +44,8 @@ def get_jira():
 
     config = Configuration.from_file()
     options = dict(server="https://{0}".format(config.jira_fqdn))
-    basic_auth = (config.username, config.password)
-    return JIRA(options, basic_auth=basic_auth)
-
-
-@cached_function
-def get_json_rest():
-    from .config import Configuration
-    from json_rest import JSONRestSender
-    config = Configuration.from_file()
-    json_rest = JSONRestSender("https://{0}/rest".format(config.jira_fqdn))
-    json_rest.set_basic_authorization(config.username, config.password)
-    return json_rest
+    basic_auth = get_auth(config.jira_fqdn)
+    return JIRA(options, basic_auth=(basic_auth.username, basic_auth.password))
 
 
 @cached_function
@@ -61,8 +70,8 @@ def get_issues__assigned_to_me(project=None):
 
 def add_labels_to_issue(key, labels):
     issue = get_issue(key)
-    labels = set.union(set([unicode(label) for label in labels]), set(issue.fields().labels))
-    issue.update(labels=list(labels))
+    labels = set.union(set([str(label) for label in labels]), set(issue.fields().labels))
+    issue.update(labels=[dict(add=label) for label in labels])
 
 
 def assign_issue(key, assignee):
@@ -73,7 +82,7 @@ def from_jira_formatted_datetime(formatted_string):
     # http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
     import re
     import datetime
-    return datetime.datetime(*map(int, re.split('[^\d]', formatted_string)[:-1]))
+    return datetime.datetime(*list(map(int, re.split('[^\d]', formatted_string)[:-1])))
 
 
 def from_jira_formatted_date(formatted_string):
@@ -96,7 +105,7 @@ def transition_issue(key, transition_string, additional_fields, id_lookup_method
     [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
     fields = dict()
     if additional_fields:
-        for key, value in additional_fields.items():
+        for key, value in list(additional_fields.items()):
             if key in ('issuelinks', ):
                 fields[key] = value
             else:
@@ -112,7 +121,7 @@ def resolve_issue(key, resolution_string, fix_versions_strings):
     project_versions = jira.project_versions(issue.fields().project)
     fix_versions = [dict(id=item.id) for item in project_versions if item.name in fix_versions_strings]
     fields = dict(resolution=dict(id=resolution), fixVersions=fix_versions)
-    transition_issue(key, "Resolve Issue", fields)
+    transition_issue(key, "Resolve Issue", dict(), **fields)
 
 
 def start_progress(key):
@@ -162,18 +171,22 @@ def get_next_release_name_in_project(key):
 
 
 @cached_function
-def get_custom_field_values(customfield_name):
-    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
+def _get_options(customfield_name):
+    config = Configuration.from_file()
     customfield_id = get_custom_fields()[customfield_name]
-    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    options = requests.get(GET_URI.format(fqdn=config.jira_fqdn, customfield_id=customfield_id),
+                           auth=get_auth(config.jira_fqdn),
+                           headers=get_headers()).json()
+    return options
+
+
+def get_custom_field_values(customfield_name):
+    options = _get_options(customfield_name)
     return [item['optionvalue'] for item in options]
 
 
-@cached_function
 def get_enabled_custom_field_values(customfield_name):
-    GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
-    customfield_id = get_custom_fields()[customfield_name]
-    options = get_json_rest().get(GET_URI.format(customfield_id=customfield_id))
+    options = _get_options(customfield_name)
     return [item['optionvalue'] for item in options if not item['disabled']]
 
 
@@ -231,7 +244,7 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
     if not components:
         fields.pop('components')
     if additional_fields:
-        for key, value in additional_fields.items():
+        for key, value in list(additional_fields.items()):
             _id_lookup_method = id_lookup_method or partial(get_custom_field_value_id_from_createmeta, project_key=project_key, issue_type_name=issue_type_name)
             fields[get_custom_fields()[key]] = _compute_value(key, value, _id_lookup_method)
     issue = jira.create_issue(fields=fields)

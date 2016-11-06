@@ -10,6 +10,7 @@ Usage:
  Options:
     --help   this screen
 """
+from __future__ import print_function
 
 from sys import stderr, stdout
 from . import jira_adapter
@@ -36,7 +37,7 @@ def set_environment_variables_for_issue(arguments, environment_variables):
     try:
         jira_adapter.get_issue(issue_key or "_")
     except jira_adapter.JIRAError:
-        print >> stderr, "no such issue", issue_key
+        print("no such issue", issue_key, file=stderr)
         raise SystemExit(1)
     environment_variables.update(JISSUE_ISSUE=issue_key.upper())
 
@@ -46,18 +47,18 @@ def set_environment_variables_for_project(arguments, environment_variables):
     try:
         project = jira_adapter.get_project(project_key or "_")
     except jira_adapter.JIRAError:
-        print >> stderr, "no such project", project_key
+        print("no such project", project_key, file=stderr)
         raise SystemExit(1)
     next_version = jira_adapter.get_next_release_name_in_project(project_key)
     project_version = arguments.get("<version>") if not arguments.project else next_version \
                       or (environ.get("JISSUE_VERSION") if not arguments.project else '') \
                       or next_version
     if project_version not in [item.name for item in project.versions] and not arguments.get("--no-version"):
-        print >> stderr, "no such version", project_version
+        print("no such version", project_version, file=stderr)
         raise SystemExit(1)
     project_component = arguments.get("<component>") or environ.get("JISSUE_COMPONENT")
     if project_component not in [item.name for item in project.components] + [None, '']:
-        print >> stderr, "no such component", project_component
+        print("no such component", project_component, file=stderr)
         raise SystemExit(1)
     environment_variables.update(JISSUE_PROJECT=project_key.upper())
     if not arguments.get("--no-version"):
@@ -76,8 +77,8 @@ def _jish(argv):
     from .config import Configuration
     try:
         arguments = _get_arguments(argv)
-    except SystemError, e:
-        print >> stderr, e
+    except SystemError as e:
+        print(e, file=stderr)
         return 0
     environment_variables = dict()
     if arguments.deactivate:
@@ -95,8 +96,8 @@ def _jish(argv):
         arguments.workon = True
         arguments['<issue>'] = jira_adapter.create_issue(*args, **kwargs).key
         set_environment_variables(arguments, environment_variables)
-    for key, value in environment_variables.iteritems():
-        print >> stdout, "export {}={}\n".format(key, value)
+    for key, value in environment_variables.items():
+        print("export {}={}\n".format(key, value), file=stdout)
 
 
 def main():

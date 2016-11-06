@@ -22,7 +22,7 @@ def _get_arguments(argv, environ):
 def update_dropdown_list(field_name, values_filepath, sort_options_alphabetically):
     from .custom_field_editor import get_custom_field_id_by_name, update_custom_dropdown_field
     with open(values_filepath, 'rb') as fd:
-        values = [item.strip() for item in fd.xreadlines()]
+        values = [item.strip() for item in fd]
     field_id = get_custom_field_id_by_name(field_name)
     update_custom_dropdown_field(field_id, values, sort_options_alphabetically=sort_options_alphabetically)
 

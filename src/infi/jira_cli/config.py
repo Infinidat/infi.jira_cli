@@ -1,5 +1,3 @@
-from schematics.models import Model
-from schematics.types import StringType
 from os import path, getenv
 
 CONFIGFILE_PATH_DEFAULT = path.expanduser(path.join("~", ".jissue"))
@@ -9,11 +7,10 @@ class ConfigurationError(Exception):
     pass
 
 
-class Configuration(Model):
-    jira_fqdn = StringType(required=True)
-    confluence_fqdn = StringType(required=False)
-    username = StringType(required=True)
-    password = StringType(required=True)
+class Configuration(object):
+    def __init__(self):
+        self.jira_fqdn = ''
+        self.confluence_fqdn = ''
 
     @classmethod
     def get_filepath(cls):
@@ -28,8 +25,9 @@ class Configuration(Model):
         with open(filepath) as fd:
             data = load(fd)
         self = cls()
-        for key, value in data.iteritems():
-            setattr(self, key, value)
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
         return self
 
     def save(self):
