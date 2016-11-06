@@ -104,7 +104,7 @@ def exception_handler(func):
         except JIRAError as e:
             print(e, file=stderr)
         except ExecutionError as e:
-            print(e.result.get_stderr(), file=stderr)
+            print(e.result.get_stderr() + e.result.get_stdout(), file=stderr)
         except ConfigurationError as e:
             print(e.message, file=stderr)
         return 1

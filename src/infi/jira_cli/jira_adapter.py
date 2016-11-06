@@ -71,7 +71,7 @@ def get_issues__assigned_to_me(project=None):
 def add_labels_to_issue(key, labels):
     issue = get_issue(key)
     labels = set.union(set([str(label) for label in labels]), set(issue.fields().labels))
-    issue.update(labels=list(labels))
+    issue.update(labels=[dict(add=label) for label in labels])
 
 
 def assign_issue(key, assignee):
@@ -121,7 +121,7 @@ def resolve_issue(key, resolution_string, fix_versions_strings):
     project_versions = jira.project_versions(issue.fields().project)
     fix_versions = [dict(id=item.id) for item in project_versions if item.name in fix_versions_strings]
     fields = dict(resolution=dict(id=resolution), fixVersions=fix_versions)
-    transition_issue(key, "Resolve Issue", fields)
+    transition_issue(key, "Resolve Issue", dict(), **fields)
 
 
 def start_progress(key):
