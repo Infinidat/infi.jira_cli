@@ -4,7 +4,7 @@ from munch import Munch
 from logging import getLogger
 from functools import partial
 from .config import Configuration
-from .custom_field_editor import GET_URI
+from .custom_field_editor import GET_URI, get_jira_url
 import requests
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
@@ -174,7 +174,7 @@ def get_next_release_name_in_project(key):
 def _get_options(customfield_name):
     config = Configuration.from_file()
     customfield_id = get_custom_fields()[customfield_name]
-    options = requests.get(GET_URI.format(fqdn=config.jira_fqdn, customfield_id=customfield_id),
+    options = requests.get(get_jira_url(GET_URI.format(customfield_id=customfield_id)),
                            auth=get_auth(config.jira_fqdn),
                            headers=get_headers()).json()
     return options

@@ -9,10 +9,10 @@ except:
 
 BASE_REST_URI = "https://{fqdn}/rest/"
 FIELD_URI = "/api/2/field"
-ADD_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}"
-GET_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
-REORDER_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}/move"
-DELETE_URI = "/jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}"
+ADD_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}"
+GET_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
+REORDER_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}/move"
+DELETE_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}"
 
 
 
