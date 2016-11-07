@@ -31,9 +31,9 @@ def get_headers():
 
 
 @cached_function
-def get_jira_url(endppoint, *args, **kwargs):
+def get_jira_url(endpoint, *args, **kwargs):
     config = Configuration.from_file()
-    return urllib.parse.join(BASE_REST_URI.format(fqdn=config.jira_fqdn), endpoint)
+    return urljoin(BASE_REST_URI.format(fqdn=config.jira_fqdn), endpoint)
 
 
 def get_fields():
