@@ -102,7 +102,7 @@ def update_page_contents(page_id, body):
                 body=dict(storage=dict(representation='storage', value=body)))
     if page['ancestors']:
         data['ancestors'] = [dict(id=page['ancestors'][-1]['id'])]
-    requests.put(_get_confluence_uri('api/content/{}'.format(page_id)), data=data)
+    requests.put(_get_confluence_uri('api/content/{}'.format(page_id)), json=data, auth=get_auth()).raise_for_status()
 
 
 def iter_attachments(page_id, start=0, limit=50):
