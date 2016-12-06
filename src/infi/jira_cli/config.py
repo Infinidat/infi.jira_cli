@@ -30,14 +30,15 @@ class Configuration(object):
                 setattr(self, key, value)
         return self
 
+    def serialize(self):
+        return dict(jira_fqdn=self.jira_fqdn, confluence_fqdn=self.confluence_fqdn)
+
     def save(self):
         from json import dump
         filepath = self.get_filepath()
-        serialize = getattr(self, "to_python") if hasattr(self, "to_python") else getattr(self, "serialize")
         with open(filepath, 'w') as fd:
-            dump(serialize(), fd, indent=4)
+            dump(self.serialize(), fd, indent=4)
 
     def to_json(self, indent=False):
         from json import dumps
-        serialize = getattr(self, "to_python") if hasattr(self, "to_python") else getattr(self, "serialize")
-        return dumps(serialize(), indent=indent)
+        return dumps(self.serialize(), indent=indent)

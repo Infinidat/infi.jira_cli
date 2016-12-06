@@ -177,13 +177,16 @@ def config_show(arguments):
 
 
 def config_set(arguments):
-    from .config import Configuration
+    from .config import Configuration, ConfigurationError
 
-    values = {item: getattr(arguments, "<{0}>".format(item))
-              for item in ['jira_fqdn', 'username', 'password']}
-    config = Configuration()
-    for key, value in values.items():
-        setattr(config, key, value)
+    try:
+        config = Configuration.from_file()
+    except ConfigurationError:
+        config = Configuration()
+    for key in ['jira_fqdn', 'confluence_fqdn']:
+        value = getattr(arguments, "<{0}>".format(key), None)
+        if value is not None:
+            setattr(config, key, value)
     config.save()
 
 
