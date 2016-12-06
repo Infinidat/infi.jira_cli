@@ -19,7 +19,7 @@ Usage:
     jissue history {project}
     jissue filters
     jissue config show
-    jissue config set [<jira_fqdn>] [<confluence_fqdn>]
+    jissue config set <jira_fqdn> [<confluence_fqdn>]
 
 Options:
     list                                list open issues in project/version
