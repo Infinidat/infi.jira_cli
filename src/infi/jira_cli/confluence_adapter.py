@@ -52,7 +52,7 @@ def _intersect_and_extract_single_id(response1, response2):
 
 
 def _intersect_and_extract_single_id_or_none(response1, response2):
-    intersection = _extract_id_set(response1).intersection(response2)
+    intersection = _extract_id_set(response1).intersection(_extract_id_set(response2))
     if len(intersection) > 1:
         raise Exception('Should have found at most one id, instead found {}'.format(intersection))
     return (list(intersection) + [None])[0]
