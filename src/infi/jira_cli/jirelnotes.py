@@ -16,6 +16,7 @@ Options:
     config set                           set the Confluence IP or hostname. The credentials are taken from jissue config
     --project=PROJECT                    project key {project_default}
 """
+from __future__ import print_function
 
 RELEASE_NOTES_TITLE_KEY = 'Release Notes Title'
 RELEASE_NOTES_DESCRIPTION_KEY = 'Release Notes Description'
@@ -60,11 +61,16 @@ def _get_arguments(argv, environ):
     return arguments
 
 
-def get_issue_details(issue):
+def get_field(issue, key):
     from .jira_adapter import get_custom_fields
+    result = getattr(issue.fields(), get_custom_fields()[key])
+    return result.replace('\r', '') if result else None
+
+
+def get_issue_details(issue):
     return dict(key=issue.key,
-                title=getattr(issue.fields(), get_custom_fields()[RELEASE_NOTES_TITLE_KEY]),
-                description=getattr(issue.fields(), get_custom_fields()[RELEASE_NOTES_DESCRIPTION_KEY]))
+                title=get_field(issue, RELEASE_NOTES_TITLE_KEY),
+                description=get_field(issue, RELEASE_NOTES_DESCRIPTION_KEY))
 
 
 def is_bug(issue):
@@ -98,7 +104,8 @@ def get_release_notes_contents_for_specfic_version(project, version):
         topics = [dict(name="What's new in this release", issues=[get_issue_details(issue) for issue in resolved_issues if is_new_feature(issue)]),
                   dict(name='Improvements', issues=[get_issue_details(issue) for issue in resolved_issues if is_improvement(issue)]),
                   dict(name='Fixed issues', issues=[get_issue_details(issue) for issue in resolved_issues if is_bug(issue)]),
-                  dict(name='Known issues', issues=[get_issue_details(issue) for issue in known_issues])]
+                  dict(name='Known issues', issues=[get_issue_details(issue) for issue in known_issues]),
+                  ]
         return dict(name=version.name, release_date=release_date, topics=topics)
     else:
         return dict()
@@ -115,7 +122,7 @@ def render_release_notes(project_key, project_version, include_next_release, pag
     from pkg_resources import resource_string
     from .jira_adapter import get_project, get_version, get_jira, issue_mappings, get_custom_fields
     from .jira_adapter import get_next_release_name_in_project
-    from .confluence_adapter import iter_attachments, get_page_contents
+    from .confluence_adapter import iter_attachments, get_page_contents, get_page_storage
     template = Template(resource_string('infi.jira_cli', 'release_notes.html'))
     project = get_project(project_key)
     real_versions = [version for version in reversed(project.versions) if
@@ -125,8 +132,8 @@ def render_release_notes(project_key, project_version, include_next_release, pag
     attachments = list(iter_attachments(page_id))
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
     return template.render(project=project, releases=exposed_releases, page_id=page_id, attachments=attachments,
-                           header=get_page_contents(header_id) if header_id else None,
-                           footer=get_page_contents(footer_id) if footer_id else None)
+                           header=get_page_storage(header_id) if header_id else None,
+                           footer=get_page_storage(footer_id) if footer_id else None)
 
 
 def get_release_notes(project_key, project_version, include_next_release):
@@ -135,7 +142,12 @@ def get_release_notes(project_key, project_version, include_next_release):
     page_id = get_release_notes_page_id(project_key)
     header_id = get_release_notes_header_page_id(project_key)
     footer_id = get_release_notes_footer_page_id(project_key)
-    release_notes = render_release_notes(project_key, project_version, include_next_release, page_id, header_id, footer_id)
+    release_notes = render_release_notes(project_key,
+                                         project_version,
+                                         include_next_release,
+                                         page_id,
+                                         header_id,
+                                         footer_id)
     return release_notes, page_id
 
 
@@ -147,12 +159,12 @@ def publish_release_notes(project_key, project_version, include_next_release):
 
 def show_release_notes(project_key, project_version, include_next_release):
     release_notes, page_id = get_release_notes(project_key, project_version, include_next_release)
-    print release_notes
+    print(release_notes)
 
 
 def fetch_release_notes(project_key):
     from .confluence_adapter import get_page_contents, get_release_notes_page_id
-    print get_page_contents(get_release_notes_page_id(project_key))
+    print(get_page_contents(get_release_notes_page_id(project_key)))
 
 
 def notify_related_tickets(project_key, project_version, other_versions, dry_run):
@@ -167,7 +179,7 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
 
     def _iter_related_tickets(issue):
         for link in issue_mappings.IssueLinks(issue):
-            if not link.type.name in (u'Originates', u'Clones', u'Cloners', u'Relates', 'Supersede', 'Duplicate'):
+            if not link.type.name in ('Originates', 'Clones', 'Cloners', 'Relates', 'Supersede', 'Duplicate'):
                 continue
             related_issue = getattr(link, 'inwardIssue', getattr(link, 'outwardIssue', None))
             if related_issue.key.startswith(project_key.upper()):
@@ -185,7 +197,7 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
         for link in issue_mappings.IssueLinks(related_ticket):
             if not hasattr(link, 'outwardIssue'):
                 continue
-            if not issue_mappings.Status(link.outwardIssue) in (u'Open', 'Reopened'):
+            if not issue_mappings.Status(link.outwardIssue) in ('Open', 'Reopened'):
                 continue
             yield link.outwardIssue
 
@@ -204,14 +216,14 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
     project = get_project(project_key)
     versions = []
     related_tickets = find_issues_in_other_projects_that_are_pending_on_this_release()
-    for related_ticket, resolved_issues in sorted(related_tickets.items(), key=lambda item: item[0].key):
+    for related_ticket, resolved_issues in sorted(list(related_tickets.items()), key=lambda item: item[0].key):
         unresolved_issues = list(_iter_related_remaining_open_issues(related_ticket))
         comment = _build_comment(resolved_issues, unresolved_issues)
         comment = "".join(i for i in comment if ord(i)<128)
         if dry_run:
-            print "<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket.key, comment)
+            print("<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket.key, comment))
         else:
-            print 'commenting on %s' % related_ticket.key
+            print('commenting on %s' % related_ticket.key)
             comment_on_issue(related_ticket.key, comment)
 
 
@@ -248,19 +260,19 @@ def _jiject(argv, environ):
     try:
         arguments = _get_arguments(argv, dict(deepcopy(environ)))
         return do_work(arguments)
-    except DocoptExit, e:
-        print >> stderr, e
+    except DocoptExit as e:
+        print(e, file=stderr)
         return 1
-    except AssertionError, e:
-        print >> stderr, e
+    except AssertionError as e:
+        print(e, file=stderr)
         return 1
-    except SystemExit, e:
-        print >> stderr, e
+    except SystemExit as e:
+        print(e, file=stderr)
         return 0
-    except JIRAError, e:
-        print >> stderr, e
-    except ExecutionError, e:
-        print >> stderr, e.result.get_stderr()
+    except JIRAError as e:
+        print(e, file=stderr)
+    except ExecutionError as e:
+        print(e.result.get_stderr(), file=stderr)
     return 1
 
 

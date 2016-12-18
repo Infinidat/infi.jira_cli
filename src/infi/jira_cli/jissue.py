@@ -19,7 +19,7 @@ Usage:
     jissue history {project}
     jissue filters
     jissue config show
-    jissue config set <jira_fqdn> <username> <password>
+    jissue config set <jira_fqdn> [<confluence_fqdn>]
 
 Options:
     list                                list open issues in project/version
@@ -56,6 +56,7 @@ Options:
     --short                             print just the issue key, useful for scripting
     --help                              show this screen
 """
+from __future__ import print_function
 
 
 def _get_arguments(argv, environ):
@@ -95,17 +96,17 @@ def exception_handler(func):
         try:
             return func(*args, **kwargs) or 0
         except DocoptExit as e:
-            print >> stderr, e
+            print(e, file=stderr)
             return 1
         except SystemExit as e:
-            print >> stderr, e
+            print(e, file=stderr)
             return 0
         except JIRAError as e:
-            print >> stderr, e
+            print(e, file=stderr)
         except ExecutionError as e:
-            print >> stderr, e.result.get_stderr()
+            print(e.result.get_stderr() + e.result.get_stdout(), file=stderr)
         except ConfigurationError as e:
-            print >> stderr, e.message
+            print(e.message, file=stderr)
         return 1
     return wrapper
 

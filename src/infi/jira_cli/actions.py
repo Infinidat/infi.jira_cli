@@ -7,30 +7,31 @@ def format(value, slice=None):
     if isinstance(value, datetime):
         return value.strftime("%Y-%m-%d %H:%M")
     if isinstance(value, (list, tuple)):
-        if len(value) and isinstance(value[0], (Comment, )):
+        if len(value) and isinstance(value[0], Comment):
             from .jira_adapter import from_jira_formatted_datetime
-            return "\n\n".join([u"{0} added a comment - {1}\n{2}".format(item.author.displayName,
+            return "\n\n".join(["{0} added a comment - {1}\n{2}".format(item.author.displayName,
                                                                          format(from_jira_formatted_datetime(item.created)),
                                                                          item.body)
                                 for item in value])
-        if len(value) and isinstance(value[0], (IssueLink, )):
+        if len(value) and isinstance(value[0], IssueLink):
             from .jira_adapter import issue_mappings
             get_linked_issue = lambda item: getattr(item, "inwardIssue", getattr(item, "outwardIssue", None))
-            get_link_text = lambda item: item.type.inward if hasattr(item, "inwardIssue") else item.type.outward
-            return "\n\n".join(["u{0:<20} {1:<15} {2:<15} {3}".format(get_link_text(item),
-                                                                      issue_mappings['Key'](get_linked_issue(item)),
-                                                                      issue_mappings['Status'](get_linked_issue(item)),
-                                                                      issue_mappings['Summary'](get_linked_issue(item)))
+            get_link_text = lambda item: '<%s'%item.type.inward if hasattr(item, "inwardIssue") else '>%s'%item.type.outward
+
+            return "\n\n".join(["{0:<20} {1:<15} {2:<15} {3}".format(get_link_text(item),
+                                                                     issue_mappings['Key'](get_linked_issue(item)),
+                                                                     issue_mappings['Status'](get_linked_issue(item)),
+                                                                     issue_mappings['Summary'](get_linked_issue(item)))
                                 for item in value])
-        if len(value) and isinstance(value[0], (Issue, )):
+        if len(value) and isinstance(value[0], Issue):
             from .jira_adapter import issue_mappings
-            return "\n".join(["u{0:<20} {1:<15} {2:<15} {3}".format('',
-                                                                    issue_mappings['Key'](item),
-                                                                    issue_mappings['Status'](item),
-                                                                    issue_mappings['Summary'](item))
+            return "\n".join(["{0:<20} {1:<15} {2:<15} {3}".format('',
+                                                                   issue_mappings['Key'](item),
+                                                                   issue_mappings['Status'](item),
+                                                                   issue_mappings['Summary'](item))
                               for item in value])
         return ', '.join(value)
-    return unicode(value)[:slice]
+    return str(value)[:slice]
 
 
 def _stringify(item):
@@ -82,7 +83,7 @@ def stop(arguments):
 def get_issue_pretty(key):
     from textwrap import dedent
     from string import printable
-    template = u"""
+    template = """
     {Project} / {Key}
     {Summary}
 
@@ -161,12 +162,12 @@ def create(arguments):
 
 
 def assign(arguments):
-    from .jira_adapter import assign_issue
+    from .jira_adapter import assign_issue, get_auth
     from .config import Configuration
     key = arguments.get("<issue>")
     assignee = arguments.get("--assignee") if arguments.get("--assignee") else \
         "-1" if arguments.get("--automatic") else \
-        Configuration.from_file().username if arguments.get("--to-me") else None  # --to-no-one
+        get_auth(Configuration.from_file().jira_fqdn).username if arguments.get("--to-me") else None  # --to-no-one
     assign_issue(key, assignee)
 
 
@@ -176,13 +177,16 @@ def config_show(arguments):
 
 
 def config_set(arguments):
-    from .config import Configuration
+    from .config import Configuration, ConfigurationError
 
-    values = {item: getattr(arguments, "<{0}>".format(item))
-              for item in ['jira_fqdn', 'username', 'password']}
-    config = Configuration()
-    for key, value in values.iteritems():
-        setattr(config, key, value)
+    try:
+        config = Configuration.from_file()
+    except ConfigurationError:
+        config = Configuration()
+    for key in ['jira_fqdn', 'confluence_fqdn']:
+        value = getattr(arguments, "<{0}>".format(key), None)
+        if value is not None:
+            setattr(config, key, value)
     config.save()
 
 
@@ -227,7 +231,7 @@ def reopen(arguments):
 
 
 def commit(arguments):
-    from .jira_adapter import get_issue
+    from .jira_adapter import get_issue, get_auth
     from .config import Configuration
     from infi.execute import execute_assert_success
     from sys import stdin, stdout, stderr
@@ -237,7 +241,7 @@ def commit(arguments):
     message = arguments.get("<message>") or ''
     key = arguments.get("<issue>")
     data = get_issue_pretty(key)
-    username = Configuration.from_file().username
+    username = get_auth(Configuration.from_file().jira_fqdn).username
     shame = '@{} why you no put commit message'.format(username)
     args += ["--message", "{} {}".format(key, message if message else shame),
              "--message", '='*80 + '\n' + data]
