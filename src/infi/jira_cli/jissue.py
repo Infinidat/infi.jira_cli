@@ -4,6 +4,7 @@ infinidat jira issue command-line tool
 Usage:
     jissue list {project} [--sort-by=<column-name>] [--reverse] [--assignee=<assignee>]
     jissue search [--sort-by=<column-name>] [--reverse] (--filter=<filter> | <query>)
+    jissue get <customfield> {issue}
     jissue start {issue}
     jissue stop {issue}
     jissue show {issue}
@@ -24,6 +25,7 @@ Usage:
 Options:
     list                                list open issues in project/version
     search                              search for issues
+    get                                 get customfield value
     start                               mark work started on issue
     stop                                mark work stopped on issue
     show                                pretty-print issue details

@@ -122,6 +122,13 @@ def show(arguments):
     print(get_issue_pretty(arguments.get("<issue>")))
 
 
+def get(arguments):
+    from .jira_adapter import get_issue, get_custom_fields
+    customfield = get_custom_fields()[arguments.get("<customfield>")]
+    issue = get_issue(arguments.get("<issue>"))
+    print(getattr(issue.fields(), customfield))
+
+
 def comment(arguments):
     from .jira_adapter import comment_on_issue
     comment_on_issue(arguments.get("<issue>"), arguments.get("<message>"))
@@ -268,6 +275,7 @@ def get_mappings():
         start=start,
         stop=stop,
         show=show,
+        get=get,
         create=create,
         comment=comment,
         resolve=resolve,
