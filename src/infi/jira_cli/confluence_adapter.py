@@ -81,10 +81,10 @@ def get_release_notes_footer_page_id(project_name):
 
 
 def get_page_contents(page_id):
-    page = requests.get(_get_confluence_uri('api/content/{}?expand=body.view,version.number'.format(page_id)),
+    page = requests.get(_get_confluence_uri('api/content/{}?expand=body.export_view,version.number'.format(page_id)),
                         auth=get_auth(),
                         headers=get_headers()).json()
-    return page['body']['view']['value'].replace(u'\xc3\x82', '').replace(u'\xc2\xa0', '')
+    return page['body']['export_view']['value'].replace(u'\xc3\x82', '').replace(u'\xc2\xa0', '')
 
 
 def get_page_storage(page_id):
