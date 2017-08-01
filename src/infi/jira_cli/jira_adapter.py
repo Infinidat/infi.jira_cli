@@ -217,7 +217,7 @@ def _compute_value(key, value, id_lookup_method):
     return result if isinstance(result, dict) else result
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, parent=None, additional_fields=None, id_lookup_method=None):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, priority=None, assignee=None, parent=None, additional_fields=None, id_lookup_method=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
@@ -237,6 +237,8 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
       fields.pop('description')
     if assignee:
       fields['assignee'] = dict(name=assignee)
+    if priority:
+      fields['priority'] = dict(name=priority)
     if parent:
       fields['parent'] = dict(key=parent)
     if not versions:
