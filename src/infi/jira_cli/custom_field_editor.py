@@ -1,5 +1,6 @@
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
+from infi.jira_cli.jira_adapter import get_auth
 import requests
 try:
     from urlparse import urljoin
@@ -9,20 +10,10 @@ except:
 
 BASE_REST_URI = "https://{fqdn}/rest/"
 FIELD_URI = "/api/2/field"
-ADD_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}"
-GET_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoptions/{customfield_id}"
-REORDER_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}/move"
-DELETE_URI = "jiracustomfieldeditorplugin/1.1/user/customfieldoption/{customfield_id}/{option_id}"
-
-
-
-
-@cached_function
-def get_auth(fqdn):
-    config = Configuration.from_file()
-    credential_store = ConfluenceCredentialsStore()
-    credentials = credential_store.get_credentials(fqdn)
-    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+ADD_URI = "jiracustomfieldeditorplugin/1/user/customfields/{customfield_id}/contexts/default/options"
+GET_URI = "jiracustomfieldeditorplugin/1/user/customfields/{customfield_id}/contexts/default/options"
+REORDER_URI = "jiracustomfieldeditorplugin/1/user/customfields/{customfield_id}//contexts/default/options/{option_id}/move"
+DELETE_URI = "jiracustomfieldeditorplugin/1/user/customfields/{customfield_id}//contexts/default/options/{option_id}"
 
 
 @cached_function
@@ -50,9 +41,12 @@ def get_custom_field_id_by_name(name):
 
 
 def get_options_for_custom_field(field_id):
-    return requests.get(get_jira_url(GET_URI.format(customfield_id=field_id)),
+    config = Configuration.from_file()
+    response = requests.get(get_jira_url(GET_URI.format(customfield_id=field_id.split('_')[1])),
                         auth=get_auth(config.jira_fqdn),
-                        headers=get_headers()).json()
+                        headers=get_headers())
+    response.raise_for_status()
+    return response.json()
 
 
 def update_custom_dropdown_field(field_id, values, sort_options_alphabetically=True):
