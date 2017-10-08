@@ -4,7 +4,6 @@ from munch import Munch
 from logging import getLogger
 from functools import partial
 from .config import Configuration
-from .custom_field_editor import GET_URI, get_jira_url
 import requests
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
@@ -172,12 +171,10 @@ def get_next_release_name_in_project(key):
 
 @cached_function
 def _get_options(customfield_name):
+    from .custom_field_editor import get_options_for_custom_field
     config = Configuration.from_file()
     customfield_id = get_custom_fields()[customfield_name]
-    options = requests.get(get_jira_url(GET_URI.format(customfield_id=customfield_id)),
-                           auth=get_auth(config.jira_fqdn),
-                           headers=get_headers()).json()
-    return options
+    return get_options_for_custom_field(customfield_id)
 
 
 def get_custom_field_values(customfield_name):
@@ -217,7 +214,7 @@ def _compute_value(key, value, id_lookup_method):
     return result if isinstance(result, dict) else result
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=None, parent=None, additional_fields=None, id_lookup_method=None):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, priority=None, assignee=None, parent=None, additional_fields=None, id_lookup_method=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
@@ -237,6 +234,8 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
       fields.pop('description')
     if assignee:
       fields['assignee'] = dict(name=assignee)
+    if priority:
+      fields['priority'] = dict(name=priority)
     if parent:
       fields['parent'] = dict(key=parent)
     if not versions:
