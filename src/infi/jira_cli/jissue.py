@@ -19,8 +19,11 @@ Usage:
     jissue inventory {project}
     jissue history {project}
     jissue filters
+    jissue plugins show all
+    jissue plugins show actionable
     jissue config show
     jissue config set <jira_fqdn> [<confluence_fqdn>]
+
 
 Options:
     list                                list open issues in project/version
@@ -40,6 +43,7 @@ Options:
     inventory                           list components, versions, transisions in project
     history                             show issue transion history
     filters                             list issue search filters
+    plugins                             list plugins
     config                              get/set jira configuration
     <project>                           project key {project_default}
     <issue>                             issue key {issue_default}

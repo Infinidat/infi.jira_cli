@@ -269,6 +269,38 @@ def filters(arguments):
     print(table)
 
 
+def plugins_show_all(arguments):
+    from prettytable import PrettyTable
+    from .plugins import get_plugins
+    table = PrettyTable(["name", "type", "enabled", "installed version", 'marketplace version', 'license', 'license expires at'])
+    table.align = 'l'
+    for plugin in get_plugins():
+        table.add_row([plugin.name, plugin.type, plugin.is_enabled(),
+                       plugin.installed_version, plugin.marketplace_version,
+                       'Evaluation' if plugin.license_details.evaluation else plugin.license_details.type,
+                       plugin.license_details.end_date])
+    print(table)
+
+
+def plugins_show_actionable(arguments):
+    from prettytable import PrettyTable
+    from .plugins import get_plugins
+    from datetime import datetime
+    table = PrettyTable(["name", "installed version", 'marketplace version', 'license', 'license expires at', 'license expires in'])
+    table.align = 'l'
+    for plugin in get_plugins():
+        if plugin.type != "User":
+            continue
+        if not plugin.is_update_available() and not plugin.is_license_expires_soon():
+            continue
+        table.add_row([plugin.name,
+                       plugin.installed_version, plugin.marketplace_version,
+                       'evaluation' if plugin.license_details.evaluation else plugin.license_details.type,
+                       plugin.license_details.end_date,
+                       '{} days'.format((plugin.license_details.end_date - datetime.now()).days) if plugin.license_details.end_date else ''])
+    print(table)
+
+
 def get_mappings():
     return dict(
         list=list_issues,
@@ -288,6 +320,7 @@ def get_mappings():
         commit=commit,
         reopen=reopen,
         filters=filters,
+        plugins=dict(show=dict(all=plugins_show_all, actionable=plugins_show_actionable)),
         config=dict(show=config_show, set=config_set),
     )
 
