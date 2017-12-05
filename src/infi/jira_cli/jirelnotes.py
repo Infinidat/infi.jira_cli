@@ -217,7 +217,8 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
     versions = []
     related_tickets = find_issues_in_other_projects_that_are_pending_on_this_release()
     for related_ticket, resolved_issues in sorted(list(related_tickets.items()), key=lambda item: item[0].key):
-        unresolved_issues = list(_iter_related_remaining_open_issues(related_ticket))
+        resolved_issues = list(set(resolved_issues))
+        unresolved_issues = list(set(_iter_related_remaining_open_issues(related_ticket)))
         comment = _build_comment(resolved_issues, unresolved_issues)
         comment = "".join(i for i in comment if ord(i)<128)
         if dry_run:
