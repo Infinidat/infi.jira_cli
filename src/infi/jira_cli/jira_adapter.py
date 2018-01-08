@@ -187,7 +187,7 @@ def get_enabled_custom_field_values(customfield_name):
     return [item['optionvalue'] for item in options if not item['disabled']]
 
 
-def get_custom_field_value_id_from_createmeta(project_key, issue_type_name, key, value):
+def get_custom_field_value_id_from_createmeta(key, value, project_key, issue_type_name):
     result = get_jira().createmeta(issuetypeNames=[issue_type_name], projectKeys=[project_key], expand=['projects.issuetypes.fields'])
     values = result['projects'][0]['issuetypes'][0]['fields'][get_custom_fields()[key]]['allowedValues']
     [value_id] = [item['id'] for item in values if item['value'] == value]
@@ -214,7 +214,7 @@ def _compute_value(key, value, id_lookup_method):
     return result if isinstance(result, dict) else result
 
 
-def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, priority=None, assignee=None, parent=None, additional_fields=None, id_lookup_method=None):
+def create_issue(project_key, issue_type_name, component_name, fix_version_name, details, priority=None, assignee=None, parent=None, additional_fields=None, id_lookup_method=None, due=None):
     jira = get_jira()
     project = jira.project(project_key)
     [issue_type] = [issue_type for issue_type in project.issueTypes
@@ -242,6 +242,8 @@ def create_issue(project_key, issue_type_name, component_name, fix_version_name,
         fields.pop('fixVersions')
     if not components:
         fields.pop('components')
+    if due:
+        fields['duedate'] = due
     if additional_fields:
         for key, value in list(additional_fields.items()):
             _id_lookup_method = id_lookup_method or partial(get_custom_field_value_id_from_createmeta, project_key=project_key, issue_type_name=issue_type_name)
