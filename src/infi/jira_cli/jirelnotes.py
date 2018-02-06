@@ -184,6 +184,8 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
             related_issue = getattr(link, 'inwardIssue', getattr(link, 'outwardIssue', None))
             if related_issue.key.startswith(project_key.upper()):
                 continue
+            if not issue_mappings.Status(related_issue) in ('Closed',):
+                continue
             yield related_issue
 
     def find_issues_in_other_projects_that_are_pending_on_this_release():
@@ -213,6 +215,7 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
                                             issue_mappings=issue_mappings)
 
     from .jira_adapter import search_issues, issue_mappings, comment_on_issue, get_project, get_issue
+    from jira import JIRAError
     project = get_project(project_key)
     versions = []
     related_tickets = find_issues_in_other_projects_that_are_pending_on_this_release()
@@ -225,7 +228,10 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
             print("<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket.key, comment))
         else:
             print('commenting on %s' % related_ticket.key)
-            comment_on_issue(related_ticket.key, comment)
+            try:
+                comment_on_issue(related_ticket.key, comment)
+            except JIRAError:
+                print('Failed to comment on %s' % related_ticket.key)
 
 
 def config_set(confluence_fqdn):

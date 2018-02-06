@@ -272,12 +272,13 @@ def filters(arguments):
 def plugins_show_all(arguments):
     from prettytable import PrettyTable
     from .plugins import get_plugins
-    table = PrettyTable(["name", "type", "enabled", "installed version", 'marketplace version', 'license', 'license expires at'])
+    table = PrettyTable(["name", "type", "enabled", "installed version", 'marketplace version', 'license type', 'license #', 'license expires at'])
     table.align = 'l'
     for plugin in get_plugins():
         table.add_row([plugin.name, plugin.type, plugin.is_enabled(),
                        plugin.installed_version, plugin.marketplace_version,
                        'Evaluation' if plugin.license_details.evaluation else plugin.license_details.type,
+                       plugin.license_details.contract_number,
                        plugin.license_details.end_date])
     print(table)
 
