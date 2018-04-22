@@ -184,7 +184,7 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
             related_issue = getattr(link, 'inwardIssue', getattr(link, 'outwardIssue', None))
             if related_issue.key.startswith(project_key.upper()):
                 continue
-            if not issue_mappings.Status(related_issue) in ('Closed',):
+            if issue_mappings.Status(related_issue) in ('Closed',):
                 continue
             yield related_issue
 
