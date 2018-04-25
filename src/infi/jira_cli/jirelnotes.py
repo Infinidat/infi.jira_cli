@@ -15,6 +15,7 @@ Options:
     notify                               find linked issues and put comments
     config set                           set the Confluence IP or hostname. The credentials are taken from jissue config
     --project=PROJECT                    project key {project_default}
+    --release=RELEASE                    project version {version_default}
 """
 from __future__ import print_function
 
