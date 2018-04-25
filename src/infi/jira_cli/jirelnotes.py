@@ -116,7 +116,7 @@ def should_appear_in_release_notes(release):
 
 
 
-def render_release_notes(project_key, project_version, include_next_release, page_id, header_id, footer_id):
+def render_release_notes(project_key, include_next_release, page_id, header_id, footer_id):
     from re import match
     from jinja2 import Template
     from pkg_resources import resource_string
@@ -136,14 +136,13 @@ def render_release_notes(project_key, project_version, include_next_release, pag
                            footer=get_page_storage(footer_id) if footer_id else None)
 
 
-def get_release_notes(project_key, project_version, include_next_release):
+def get_release_notes(project_key, include_next_release):
     from .confluence_adapter import get_release_notes_page_id
     from .confluence_adapter import get_release_notes_header_page_id, get_release_notes_footer_page_id
     page_id = get_release_notes_page_id(project_key)
     header_id = get_release_notes_header_page_id(project_key)
     footer_id = get_release_notes_footer_page_id(project_key)
     release_notes = render_release_notes(project_key,
-                                         project_version,
                                          include_next_release,
                                          page_id,
                                          header_id,
@@ -151,14 +150,14 @@ def get_release_notes(project_key, project_version, include_next_release):
     return release_notes, page_id
 
 
-def publish_release_notes(project_key, project_version, include_next_release):
+def publish_release_notes(project_key, include_next_release):
     from .confluence_adapter import update_page_contents
-    release_notes, page_id = get_release_notes(project_key, project_version, include_next_release)
+    release_notes, page_id = get_release_notes(project_key, include_next_release)
     update_page_contents(page_id, release_notes)
 
 
-def show_release_notes(project_key, project_version, include_next_release):
-    release_notes, page_id = get_release_notes(project_key, project_version, include_next_release)
+def show_release_notes(project_key, include_next_release):
+    release_notes, page_id = get_release_notes(project_key, include_next_release)
     print(release_notes)
 
 
@@ -245,9 +244,9 @@ def do_work(arguments):
     project_key = arguments['--project']
     project_version = arguments.get('--release')
     if arguments['show']:
-        show_release_notes(project_key, project_version, arguments['--include-next-release'])
+        show_release_notes(project_key, arguments['--include-next-release'])
     elif arguments['publish']:
-        publish_release_notes(project_key, project_version, arguments['--include-next-release'])
+        publish_release_notes(project_key, arguments['--include-next-release'])
     elif arguments['fetch']:
         fetch_release_notes(project_key)
     elif arguments['notify']:
