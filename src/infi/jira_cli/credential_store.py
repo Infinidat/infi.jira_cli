@@ -21,7 +21,7 @@ class BasicAuthCredentialsStore(CLICredentialsStore):
         if credentials is None:
             return False
         auth = HTTPBasicAuth(credentials.get_username(), credentials.get_password())
-        response = requests.get(self._auth_test_uri_template.format(fqdn=self._fqdn), auth=auth, verify=False)
+        response = requests.get(self._auth_test_uri_template.format(fqdn=self._fqdn), auth=auth)
         return response.status_code == 200
 
 
