@@ -63,6 +63,11 @@ Run the following:
 Running tests
 =============
 
-Before running the tests, you'll need set the jira configuration and pass some environment variables to nose:
+Before running the tests, you'll need set the jira configuration:
 
-    TEST_PROJECT= bin/nosetests
+    bin/jissue config set <jira_fqdn>
+
+Python 3
+========
+
+Support for Python 3 is experimental at this stage

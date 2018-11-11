@@ -20,7 +20,7 @@ class Plugin(object):
     def get_license_data(self):
         try:
             return self.get("license")
-        except requests.HTTPError, error:
+        except requests.HTTPError as error:
             logger.warn(error)
         return dict()
 
@@ -42,7 +42,7 @@ class Plugin(object):
     def get_info_on_marketplace(self):
         try:
             return get(self._plugin_data['links']['self'].replace("plugins/1.0/", "plugins/1.0/available/"))
-        except requests.HTTPError, error:
+        except requests.HTTPError as error:
             logger.warn(error)
         return dict()
 
