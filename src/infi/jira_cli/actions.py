@@ -163,7 +163,7 @@ def create(arguments):
     component_name = arguments.get("--component")
     assignee = Configuration.from_file().username if arguments.get("--assign-to-me") else "-1"
     additional_fields = [item.split(':=') for item in arguments.get("--field", list())]
-    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee, additional_fields)
+    issue = create_issue(project_key, issue_type_name, component_name, fix_version_name, details, assignee=assignee, additional_fields=additional_fields)
     print(issue.key) if arguments.get("--short") else show({"<issue>": issue.key})
     return issue.key
 
