@@ -124,7 +124,7 @@ def render_release_notes(project_key, include_next_release, page_id, header_id, 
     from .jira_adapter import get_project, get_version, get_jira, issue_mappings, get_custom_fields
     from .jira_adapter import get_next_release_name_in_project
     from .confluence_adapter import iter_attachments, get_page_contents, get_page_storage
-    template = Template(resource_string('infi.jira_cli', 'release_notes.html'))
+    template = Template(resource_string('infi.jira_cli', 'release_notes.html').decode())
     project = get_project(project_key)
     real_versions = [version for version in reversed(project.versions) if
                      match(r'[0-9\.]+', version.name) and not version.archived and
