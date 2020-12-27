@@ -316,7 +316,7 @@ def is_user_exists(username):
 @cached_function
 def get_user_by_name(name):
      users = get_jira().search_users(name)
-     return users[0].key if len(users) == 1 else None
+     return users[0].name if len(users) == 1 else None
 
 
 from .custom_field_editor import get_options_for_custom_field, get_custom_field_id_by_name
