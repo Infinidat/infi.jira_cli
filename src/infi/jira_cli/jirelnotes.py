@@ -192,8 +192,8 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
         related_tickets = {}
         for issue in search_issues(_build_jira_query_string()):
             for related_ticket in _iter_related_tickets(issue):
-                related_tickets.setdefault(get_issue(related_ticket.key), list()).append(issue)
-        return related_tickets
+                related_tickets.setdefault(related_ticket.key, list()).append(issue.key)
+        return related_tickets  # {ticket_key -> [related_key, related_key, ...]}
 
     def _iter_related_remaining_open_issues(related_ticket):
         for link in issue_mappings.IssueLinks(related_ticket):
@@ -201,7 +201,7 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
                 continue
             if not issue_mappings.Status(link.outwardIssue) in ('Open', 'Reopened'):
                 continue
-            yield link.outwardIssue
+            yield link.outwardIssue.key
 
     def _build_comment(resolved_issues, unresolved_issues):
         from jinja2 import Template
@@ -219,19 +219,20 @@ def notify_related_tickets(project_key, project_version, other_versions, dry_run
     project = get_project(project_key)
     versions = []
     related_tickets = find_issues_in_other_projects_that_are_pending_on_this_release()
-    for related_ticket, resolved_issues in sorted(list(related_tickets.items()), key=lambda item: item[0].key):
+    for related_ticket, resolved_issues in sorted(list(related_tickets.items()), key=lambda item: item[0]):
         resolved_issues = list(set(resolved_issues))
-        unresolved_issues = list(set(_iter_related_remaining_open_issues(related_ticket)))
-        comment = _build_comment(resolved_issues, unresolved_issues)
+        unresolved_issues = list(set(_iter_related_remaining_open_issues(get_issue(related_ticket))))
+        comment = _build_comment((get_issue(resolved_issue) for resolved_issue in resolved_issues),
+                                 (get_issue(unresolved_issue) for unresolved_issue in unresolved_issues))
         comment = "".join(i for i in comment if ord(i)<128)
         if dry_run:
-            print("<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket.key, comment))
+            print("<--- COMMENT ON {0} STARTS HERE --->\n{1}\n<--- COMMENT ON {0} ENDS HERE ----->".format(related_ticket, comment))
         else:
-            print('commenting on %s' % related_ticket.key)
+            print('commenting on %s' % related_ticket)
             try:
-                comment_on_issue(related_ticket.key, comment)
+                comment_on_issue(related_ticket, comment)
             except JIRAError:
-                print('Failed to comment on %s' % related_ticket.key)
+                print('Failed to comment on %s' % related_ticket)
 
 
 def config_set(confluence_fqdn):
