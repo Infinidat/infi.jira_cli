@@ -33,7 +33,7 @@ class BasicAuthCredentialsStore(CLICredentialsStore):
 class JIRACredentialsStore(BasicAuthCredentialsStore):
 
     def __init__(self):
-        super(JIRACredentialsStore, self).__init__('https://{fqdn}/rest/api/2/issue/createmeta')
+        super(JIRACredentialsStore, self).__init__('https://{fqdn}/rest/api/2/project/')
 
     def ask_credentials_prompt(self, key):
         print(('\nConnecting to JIRA ' + str(key)))
