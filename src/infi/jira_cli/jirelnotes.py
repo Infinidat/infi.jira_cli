@@ -129,6 +129,7 @@ def render_release_notes(project_key, include_next_release, page_id, header_id, 
     real_versions = [version for version in reversed(project.versions) if
                      match(r'[0-9\.]+', version.name) and not version.archived and
                      version.released or (version.name == get_next_release_name_in_project(project_key) if include_next_release else False)]
+    real_versions.sort(key=lambda version: tuple(map(int, version.name.split('.'))), reverse=True)
     releases = [get_release_notes_contents_for_specfic_version(project, version) for version in real_versions]
     attachments = list(iter_attachments(page_id))
     exposed_releases = [release for release in releases if should_appear_in_release_notes(release)]
