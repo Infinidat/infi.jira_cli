@@ -34,8 +34,8 @@ def _get_confluence_uri(path):
 
 @cached_function
 def _get_confluence_global_response(global_label):
-    # Consider only pages under TWDRAFTS space with suffix of vHOSTDEV-RNs
-    project_params = dict(type='page', label='global:{}'.format(global_label), query='"*vHOSTDEV-RNs$"', spaceKey='TWDRAFTS')
+    # Consider only pages under TWDRAFTS space with suffix of vHOST-RNs
+    project_params = dict(type='page', label='global:{}'.format(global_label), query='"*vHOST-RNs$"', spaceKey='TWDRAFTS')
     return requests.get(_get_confluence_uri('prototype/1/search/site'),
                         params=project_params,
                         headers=get_headers(),
