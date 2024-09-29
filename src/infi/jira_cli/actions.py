@@ -124,9 +124,9 @@ def show(arguments):
 
 def get(arguments):
     from .jira_adapter import get_issue, get_custom_fields
-    customfield = get_custom_fields()[arguments.get("<customfield>")]
+    customfield = get_custom_fields[arguments.get("<customfield>")]
     issue = get_issue(arguments.get("<issue>"))
-    print(getattr(issue.fields(), customfield))
+    print(getattr(issue.fields, customfield))
 
 
 def comment(arguments):
