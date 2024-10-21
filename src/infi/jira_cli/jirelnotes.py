@@ -64,7 +64,7 @@ def _get_arguments(argv, environ):
 
 def get_field(issue, key):
     from .jira_adapter import get_custom_fields
-    result = getattr(issue.fields(), get_custom_fields()[key])
+    result = getattr(issue.fields, get_custom_fields()[key])
     return result.replace('\r', '') if result else None
 
 

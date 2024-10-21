@@ -111,7 +111,7 @@ class CreateTestCase(unittest.TestCase):
         summary, description = "summary goes here", "description goes here"
         key = self._create(["create", "bug", "{}\n{}".format(summary, description), "HOSTDEV"])
         issue = jira_adapter.get_issue(key)
-        self.assertEquals(description, issue.fields().description)
+        self.assertEquals(description, issue.fields.description)
         jira_adapter.resolve_issue(key, 'Not a Bug', fix_version)
 
     def test_component(self):
