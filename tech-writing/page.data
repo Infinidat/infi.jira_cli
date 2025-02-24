@@ -1,0 +1,124 @@
+
+            <p class=\"auto-cursor-target\">Document status: <span style=\"color: rgb(0,255,0);\"><strong>GA</strong></span></p>
+            <ac:structured-macro ac:name=\"warning\" ac:schema-version=\"1\" ac:macro-id=\"a6c3637d-6fe2-4e8e-bcd7-c880ca8f9926\">
+            <ac:rich-text-body><p>Do not modify this page!</p></ac:rich-text-body>
+            </ac:structured-macro>
+        
+<p class=\"auto-cursor-target\"><br /></p>
+
+<ac:structured-macro ac:name=\"excerpt\" ac:schema-version=\"1\" ac:macro-id=\"c9d80e64-a7e4-4487-a2c4-3bc66c8cc0a1\">
+  <ac:parameter ac:name=\"atlassian-macro-output-type\">INLINE</ac:parameter>
+  <ac:rich-text-body>
+    <h1>Release 7.2.41</h1>
+    <h2>Release Date</h2>
+    <ul><li>February 24, 2025</li></ul>
+    
+         
+         
+                        
+                              
+                     
+            <h2>HPTVM 7.2.41 Fixed Issues</h2>
+
+        <table class=\"wrapped fixed-table\"><colgroup><col style=\"width: 75.0px;\" /><col style=\"width: 171.0px;\" /><col style=\"width: 483.0px;\" /><col style=\"width: 697.0px;\" /></colgroup>
+        <tbody>
+        <tr>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Severity</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Key</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Release Notes Title</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Release Notes Description</span></th></tr>
+        
+<tr><td>Minor</td><td>HPTVM-2646</td><td>The InfiniTool command, 'expand-disk', did not work after an in-place upgrade to version 7.2.40</td><td></td></tr>
+<tr><td>Minor</td><td>HPTVM-2651</td><td>The in-place upgrade from version 7.2.20 to 7.2.40 failed</td><td></td></tr>
+</tbody></table>           
+            <h2>HPTVM 7.2.41 Known Issues</h2>
+
+        <table class=\"wrapped fixed-table\"><colgroup><col style=\"width: 75.0px;\" /><col style=\"width: 171.0px;\" /><col style=\"width: 483.0px;\" /><col style=\"width: 697.0px;\" /></colgroup>
+        <tbody>
+        <tr>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Severity</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Key</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Release Notes Title</span></th>
+        <th style=\"text-align: left;\"><span class=\"jim-table-header-content\">Release Notes Description</span></th></tr>
+        
+<tr><td>Minor</td><td>HPTVM-1769</td><td>When an attempt to connect to an ESXi server failed, no warning message appeared</td><td></td></tr>
+<tr><td>Minor</td><td>HPTVM-1775</td><td>On rare occasions, a host could not connect to InfiniBox after the host's authentication method was manually changed on InfiniBox</td><td></td></tr>
+<tr><td>Minor</td><td>HPTVM-2629</td><td>Incomplete title in the Shortcuts view</td><td>The title below the Infinidat logo is missing. It should say \"Infinidat Snapshots\".</td></tr>
+</tbody></table>          
+  </ac:rich-text-body>
+</ac:structured-macro> 
+
+<p><br/></p>
+<p><br/></p>
+<p><br/></p>
+<hr/>
+<hr/>
+<hr/>
+
+<ac:structured-macro ac:name=\"warning\" ac:schema-version=\"1\" ac:macro-id=\"a6c3637d-6fe2-4e8e-bcd7-c880ca8f9926\">
+  <ac:rich-text-body><p>The following will not appear in the Release Notes page.</p></ac:rich-text-body>
+</ac:structured-macro>
+
+<h1>Review Helper</h1>
+
+
+  <h2>Release Notes Teams</h2>
+  <table class=\"wrapped relative-table\" style=\"width: 39.7576%;\">
+    <colgroup>
+	  <col style=\"width: 14.7345%;\" />
+	  <col style=\"width: 43.7865%;\" />
+	  <col style=\"width: 41.2844%;\" />
+	  <col style=\"width: 43.7865%;\" />
+	</colgroup>
+  <tbody>
+    <tr> <th>Group</th>        <th>HPT</th></tr>
+    <tr> <td>Tech Writing</td> <td>Shira</td></tr>
+    <tr> <td>Product</td>      <td>Tsiyon</td></tr>
+    <tr> <td>RnD</td>          <td>Depending on ticket</td></tr>
+    <tr> <td>QA</td>           <td>Moran</td></tr>
+    <tr> <td>Support</td>      <td>Yair Gany</td></tr>
+    </tbody></table>
+  
+    <h2>Release Notes tickets</h2>
+    <p>These tickets will appear in the release notes.</p>
+    <p><ac:structured-macro ac:name=\"jira\" ac:schema-version=\"1\" ac:macro-id=\"e5788f69-0052-4fa2-9da1-68c38452842c\">
+    <ac:parameter ac:name=\"server\">Infinidat</ac:parameter>
+    <ac:parameter ac:name=\"columns\">key,Release Notes Type,Release Notes Title</ac:parameter>
+    <ac:parameter ac:name=\"maximumIssues\">300</ac:parameter>
+    <ac:parameter ac:name=\"jqlQuery\">project in (HPTVM) and (labels=RN-HPTVM-7.2.41-known-issues OR ((fixVersion = 7.2.41)  and fixVersion !~ \"0.*\"  and fixVersion !~ \"1.*\"  and fixVersion !~ \"2.*\"  and fixVersion !~ \"3.*\"  and fixVersion !~ \"4.*\"  and fixVersion !~ \"5.*\"  and fixVersion !~ \"6.*\"  and fixVersion !~ \"7.1.*\"  AND resolution = Fixed AND status != Rejected AND ((&quot;Candidate for release notes&quot; = Yes AND (&quot;Excluded from the Release Notes&quot; is EMPTY OR &quot;Excluded from the Release Notes&quot; = No)) OR &quot;Release Notes Title&quot; is not EMPTY)))  </ac:parameter>
+    <ac:parameter ac:name=\"serverId\">7d107fb2-c596-3580-b7d6-c7a7101df405</ac:parameter>
+    </ac:structured-macro></p>  
+
+    <h2>Candidates for known issues from RnD that require review</h2>
+    <p>Marked as known issues but might have been fixed.</p>
+    <p><ac:structured-macro ac:name=\"jira\" ac:schema-version=\"1\" ac:macro-id=\"e5788f69-0052-4fa2-9da1-68c38452842c\">
+    <ac:parameter ac:name=\"server\">Infinidat</ac:parameter>
+    <ac:parameter ac:name=\"columns\">key,summary,type,status,resolution,assignee,reporter,created,updated,priority</ac:parameter>
+    <ac:parameter ac:name=\"maximumIssues\">300</ac:parameter>
+    <ac:parameter ac:name=\"jqlQuery\">project in (HPTVM) 
+    AND (fixVersion > 7.2.40) 
+    AND \"Candidate for release notes\" = Yes 
+    AND \"Release Notes Type\" = Known 
+    AND (type = Bug) 
+    AND status != Rejected </ac:parameter>
+    <ac:parameter ac:name=\"serverId\">7d107fb2-c596-3580-b7d6-c7a7101df405</ac:parameter>
+    </ac:structured-macro></p>  
+    <h2>Candidates for fixed issues from RnD that require review</h2>
+    <p>These tickets are marked as candidates for release notes by RnD, but their Release Notes Title field is empty. The recommended action is to provide a Release Notes Title and set the Release Notes Type field to Fixed, or to set the Excluded from Release Notes field to Yes.</p>
+    <p><ac:structured-macro ac:name=\"jira\" ac:schema-version=\"1\" ac:macro-id=\"e5788f69-0052-4fa2-9da1-68c38452842c\">
+    <ac:parameter ac:name=\"server\">Infinidat</ac:parameter>
+    <ac:parameter ac:name=\"columns\">key,summary,type,created,updated,due,assignee,reporter,priority,status,resolution</ac:parameter>
+    <ac:parameter ac:name=\"maximumIssues\">300</ac:parameter>
+    <ac:parameter ac:name=\"jqlQuery\">project in (HPTVM) and (fixVersion = 7.2.41)  and fixVersion !~ \"0.*\"  and fixVersion !~ \"1.*\"  and fixVersion !~ \"2.*\"  and fixVersion !~ \"3.*\"  and fixVersion !~ \"4.*\"  and fixVersion !~ \"5.*\"  and fixVersion !~ \"6.*\"  and fixVersion !~ \"7.1.*\"  AND resolution = Fixed AND status != Rejected AND &quot;Candidate for release notes&quot; = Yes AND &quot;Release Notes Title&quot; is EMPTY AND (&quot;Excluded from the Release Notes&quot; is EMPTY OR &quot;Excluded from the Release Notes&quot; = No) </ac:parameter>
+    <ac:parameter ac:name=\"serverId\">7d107fb2-c596-3580-b7d6-c7a7101df405</ac:parameter>
+    </ac:structured-macro></p>  
+    <h2>Fixed tickets linked to CS/ZEN tickets</h2>
+    <p>These tickets are NOT marked as candidates for release notes by RnD, but they have links to customer tickets. Best practice is to either provide a Release Notes Title and set the Release Notes Type field to Fixed, or to set the Excluded from Release Notes field to Yes. </p>
+    <p><ac:structured-macro ac:name=\"jira\" ac:schema-version=\"1\" ac:macro-id=\"e5788f69-0052-4fa2-9da1-68c38452842c\">
+    <ac:parameter ac:name=\"server\">Infinidat</ac:parameter>
+    <ac:parameter ac:name=\"columns\">key,summary,type,created,updated,due,assignee,reporter,priority,status,resolution</ac:parameter>
+    <ac:parameter ac:name=\"maximumIssues\">300</ac:parameter>
+    <ac:parameter ac:name=\"jqlQuery\">project in (HPTVM) and (fixVersion = 7.2.41)  and fixVersion !~ \"0.*\"  and fixVersion !~ \"1.*\"  and fixVersion !~ \"2.*\"  and fixVersion !~ \"3.*\"  and fixVersion !~ \"4.*\"  and fixVersion !~ \"5.*\"  and fixVersion !~ \"6.*\"  and fixVersion !~ \"7.1.*\"  AND resolution = Fixed AND status != Rejected AND ( &quot;Candidate for release notes&quot; is EMPTY OR &quot;Candidate for release notes&quot; = No) AND (&quot;Excluded from the Release Notes&quot; is EMPTY) AND ( issueFunction in linkedIssuesOf(&quot;project=CS&quot;) OR issueFunction in linkedIssuesOf(&quot;project=ZEN&quot;) ) </ac:parameter>
+    <ac:parameter ac:name=\"serverId\">7d107fb2-c596-3580-b7d6-c7a7101df405</ac:parameter>
+    </ac:structured-macro></p>  
+
