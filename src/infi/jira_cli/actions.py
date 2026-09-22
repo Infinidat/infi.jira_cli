@@ -169,12 +169,11 @@ def create(arguments):
 
 
 def assign(arguments):
-    from .jira_adapter import assign_issue, get_auth
-    from .config import Configuration
+    from .jira_adapter import assign_issue, get_jira
     key = arguments.get("<issue>")
     assignee = arguments.get("--assignee") if arguments.get("--assignee") else \
         "-1" if arguments.get("--automatic") else \
-        get_auth(Configuration.from_file().jira_fqdn).username if arguments.get("--to-me") else None  # --to-no-one
+        get_jira().current_user() if arguments.get("--to-me") else None  # --to-no-one
     assign_issue(key, assignee)
 
 
@@ -238,8 +237,7 @@ def reopen(arguments):
 
 
 def commit(arguments):
-    from .jira_adapter import get_issue, get_auth
-    from .config import Configuration
+    from .jira_adapter import get_issue, get_jira
     from infi.execute import execute_assert_success
     from sys import stdin, stdout, stderr
     from subprocess import Popen
@@ -248,7 +246,7 @@ def commit(arguments):
     message = arguments.get("<message>") or ''
     key = arguments.get("<issue>")
     data = get_issue_pretty(key)
-    username = get_auth(Configuration.from_file().jira_fqdn).username
+    username = get_jira().current_user()
     shame = '@{} why you no put commit message'.format(username)
     args += ["--message", "{} {}".format(key, message if message else shame),
              "--message", '='*80 + '\n' + data]

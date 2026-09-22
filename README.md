@@ -51,6 +51,10 @@ The configuration pathname defaults to `~/.jissue`. You can
 override it with the `INFI_JIRA_CLI_CONFIG_PATH` environment
 variable.
 
+To authenticate with a Personal Access Token instead of a password
+(required once Basic Auth is disabled on the Jira/Confluence side),
+enter `PAT:<token>` as the password when prompted.
+
 Checking out the code
 =====================
 
