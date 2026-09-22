@@ -7,8 +7,7 @@ from .config import Configuration
 import requests
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
-from .credential_store import JIRACredentialsStore
-from requests.auth import HTTPBasicAuth
+from .credential_store import JIRACredentialsStore, BasicOrBearerAuth
 
 
 logger = getLogger(__name__)
@@ -20,10 +19,9 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 
 @cached_function
 def get_auth(fqdn):
-    config = Configuration.from_file()
     credential_store = JIRACredentialsStore()
     credentials = credential_store.get_credentials(fqdn)
-    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+    return BasicOrBearerAuth(credentials)
 
 
 @cached_function
@@ -43,8 +41,10 @@ def get_jira():
 
     config = Configuration.from_file()
     options = dict(server="https://{0}".format(config.jira_fqdn))
-    basic_auth = get_auth(config.jira_fqdn)
-    return JIRA(options, basic_auth=(basic_auth.username, basic_auth.password))
+    auth = get_auth(config.jira_fqdn)
+    if auth.is_token:
+        return JIRA(options, token_auth=auth.token)
+    return JIRA(options, basic_auth=(auth.username, auth.password))
 
 
 @cached_function
