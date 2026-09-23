@@ -6,8 +6,7 @@ try:
     from urlparse import urljoin
 except:
     from urllib.parse import urljoin
-from .credential_store import ConfluenceCredentialsStore
-from requests.auth import HTTPBasicAuth
+from .credential_store import ConfluenceCredentialsStore, BasicOrBearerAuth
 
 
 @cached_function
@@ -16,7 +15,7 @@ def get_auth():
     fqdn = config.confluence_fqdn
     credential_store = ConfluenceCredentialsStore()
     credentials = credential_store.get_credentials(fqdn)
-    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+    return BasicOrBearerAuth(credentials)
 
 
 @cached_function

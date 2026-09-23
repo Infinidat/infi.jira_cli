@@ -89,9 +89,11 @@ class Plugin(object):
 
 
 def get(uri, *args, **kwargs):
-    from infi.jira_cli.jira_adapter import get_jira
+    from infi.jira_cli.jira_adapter import get_jira, get_auth
+    from infi.jira_cli.config import Configuration
     jira = get_jira()
-    respnose = requests.get("{}{}".format(jira._options['server'], uri), auth=requests.auth.HTTPBasicAuth(*jira._session.auth))
+    config = Configuration.from_file()
+    respnose = requests.get("{}{}".format(jira._options['server'], uri), auth=get_auth(config.jira_fqdn))
     respnose.raise_for_status()
     return respnose.json()
 

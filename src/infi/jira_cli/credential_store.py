@@ -1,11 +1,48 @@
 from infi.credentials_store import CLICredentialsStore
+from infi.credentials_store.base import HiddenString
 from logging import getLogger
 import requests
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase, HTTPBasicAuth
 import json
 
 
 logger = getLogger(__name__)
+
+PAT_PREFIX = "PAT:"
+PAT_PROMPT_HINT = "To use a personal access token, enter PAT:<token> as the password."
+
+
+def is_pat(password):
+    return password is not None and password.lower().startswith(PAT_PREFIX.lower())
+
+
+def extract_pat(password):
+    return HiddenString(password[len(PAT_PREFIX):])
+
+
+class BasicOrBearerAuth(AuthBase):
+    """
+    requests-compatible auth object. Sends a Bearer token if the stored
+    password is a PAT (PAT_PREFIX marker), otherwise falls back to Basic Auth.
+    """
+
+    def __init__(self, credentials):
+        self.username = credentials.get_username()
+        self.password = credentials.get_password()
+
+    @property
+    def is_token(self):
+        return is_pat(self.password)
+
+    @property
+    def token(self):
+        return extract_pat(self.password)
+
+    def __call__(self, r):
+        if self.is_token:
+            r.headers['Authorization'] = 'Bearer {}'.format(self.token)
+            return r
+        return HTTPBasicAuth(self.username, self.password)(r)
 
 
 class BasicAuthCredentialsStore(CLICredentialsStore):
@@ -20,8 +57,8 @@ class BasicAuthCredentialsStore(CLICredentialsStore):
     def authenticate(self, key, credentials):
         if credentials is None:
             return False
-        auth = HTTPBasicAuth(credentials.get_username(), credentials.get_password())
-        response = requests.get(self._auth_test_uri_template.format(fqdn=self._fqdn), auth=auth)
+        uri = self._auth_test_uri_template.format(fqdn=self._fqdn)
+        response = requests.get(uri, auth=BasicOrBearerAuth(credentials))
         return response.status_code == 200
 
 
@@ -37,6 +74,7 @@ class JIRACredentialsStore(BasicAuthCredentialsStore):
 
     def ask_credentials_prompt(self, key):
         print(('\nConnecting to JIRA ' + str(key)))
+        print(PAT_PROMPT_HINT)
 
 
 class ConfluenceCredentialsStore(BasicAuthCredentialsStore):
@@ -46,3 +84,4 @@ class ConfluenceCredentialsStore(BasicAuthCredentialsStore):
 
     def ask_credentials_prompt(self, key):
         print(('\nConnecting to Confluence ' + str(key)))
+        print(PAT_PROMPT_HINT)
