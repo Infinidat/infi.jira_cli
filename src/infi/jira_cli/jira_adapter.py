@@ -7,8 +7,7 @@ from .config import Configuration
 import requests
 from infi.pyutils.lazy import cached_function
 from .config import Configuration
-from .credential_store import JIRACredentialsStore
-from requests.auth import HTTPBasicAuth
+from .credential_store import JIRACredentialsStore, BasicOrBearerAuth
 
 
 logger = getLogger(__name__)
@@ -20,10 +19,9 @@ ASSIGNED_ISSUES = "{}assignee = {} AND resolution = unresolved ORDER BY priority
 
 @cached_function
 def get_auth(fqdn):
-    config = Configuration.from_file()
     credential_store = JIRACredentialsStore()
     credentials = credential_store.get_credentials(fqdn)
-    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+    return BasicOrBearerAuth(credentials)
 
 
 @cached_function
@@ -43,8 +41,10 @@ def get_jira():
 
     config = Configuration.from_file()
     options = dict(server="https://{0}".format(config.jira_fqdn))
-    basic_auth = get_auth(config.jira_fqdn)
-    return JIRA(options, basic_auth=(basic_auth.username, basic_auth.password))
+    auth = get_auth(config.jira_fqdn)
+    if auth.is_token:
+        return JIRA(options, token_auth=auth.token)
+    return JIRA(options, basic_auth=(auth.username, auth.password))
 
 
 @cached_function
@@ -69,7 +69,7 @@ def get_issues__assigned_to_me(project=None):
 
 def add_labels_to_issue(key, labels):
     issue = get_issue(key)
-    labels = set.union(set([str(label) for label in labels]), set(issue.fields().labels))
+    labels = set.union(set([str(label) for label in labels]), set(issue.fields.labels))
     issue.update(labels=[dict(add=label) for label in labels])
 
 
@@ -100,7 +100,7 @@ def transition_issue(key, transition_string, additional_fields, id_lookup_method
     jira = get_jira()
     issue = jira.issue(key)
     issue_type_name = issue_mappings.Type(issue)
-    project_key = issue.fields().project.key
+    project_key = issue.fields.project.key
     [transition] = [item['id'] for item in jira.transitions(issue) if matches(item['name'], transition_string)]
     fields = dict()
     if additional_fields:
@@ -117,7 +117,7 @@ def resolve_issue(key, resolution_string, fix_versions_strings):
     jira = get_jira()
     issue = jira.issue(key)
     [resolution] = [item.id for item in jira.resolutions() if matches(item.name, resolution_string)]
-    project_versions = jira.project_versions(issue.fields().project)
+    project_versions = jira.project_versions(issue.fields.project)
     fix_versions = [dict(id=item.id) for item in project_versions if item.name in fix_versions_strings]
     fields = dict(resolution=dict(id=resolution), fixVersions=fix_versions)
     transition_issue(key, "Resolve Issue", dict(), **fields)
@@ -155,7 +155,7 @@ def get_version(key, name):
 def get_next_release_name_for_issue(key):
     jira = get_jira()
     issue = jira.issue(key)
-    project = issue.fields().project.key
+    project = issue.fields.project.key
     return get_next_release_name_in_project(project)
 
 
@@ -284,27 +284,27 @@ def get_query_by_filter(name):
     raise JIRAError(404, "no such filter")
 
 
-issue_mappings = Munch(Rank=lambda issue: int(issue.fields().customfield_10700),
-                       Type=lambda issue: issue.fields().issuetype.name,
+issue_mappings = Munch(Rank=lambda issue: int(issue.fields.customfield_10700),
+                       Type=lambda issue: issue.fields.issuetype.name,
                        Key=lambda issue: issue.key,
-                       Summary=lambda issue: issue.fields().summary,
-                       Description=lambda issue: issue.fields().description,
-                       Priority=lambda issue: issue.fields().priority.name,
-                       Project=lambda issue: issue.fields().project.name,
-                       Status=lambda issue: issue.fields().status.name,
-                       Resolution=lambda issue: (issue.fields().resolution or Munch(name="Unresolved")).name,
-                       Created=lambda issue: from_jira_formatted_datetime(issue.fields().created),
-                       Updated=lambda issue: from_jira_formatted_datetime(issue.fields().updated),
-                       Assignee=lambda issue: issue.fields().assignee.displayName,
-                       Reporter=lambda issue: issue.fields().reporter.displayName,
-                       Labels=lambda issue: issue.fields().labels,
-                       Comments=lambda issue: issue.fields().comment.comments,
-                       AffectsVersions=lambda issue: [item.name for item in getattr(issue.fields(), 'versions', list())],
-                       FixVersions=lambda issue: [item.name for item in getattr(issue.fields(), 'fixVersions', list())],
-                       Components=lambda issue: [item.name for item in issue.fields().components],
-                       IssueLinks=lambda issue: issue.fields().issuelinks,
-                       SubTasks=lambda issue: issue.fields().subtasks,
-                       Attachments=lambda issue: issue.fields().attachment,
+                       Summary=lambda issue: issue.fields.summary,
+                       Description=lambda issue: issue.fields.description,
+                       Priority=lambda issue: issue.fields.priority.name,
+                       Project=lambda issue: issue.fields.project.name,
+                       Status=lambda issue: issue.fields.status.name,
+                       Resolution=lambda issue: (issue.fields.resolution or Munch(name="Unresolved")).name,
+                       Created=lambda issue: from_jira_formatted_datetime(issue.fields.created),
+                       Updated=lambda issue: from_jira_formatted_datetime(issue.fields.updated),
+                       Assignee=lambda issue: issue.fields.assignee.displayName,
+                       Reporter=lambda issue: issue.fields.reporter.displayName,
+                       Labels=lambda issue: issue.fields.labels,
+                       Comments=lambda issue: issue.fields.comment.comments,
+                       AffectsVersions=lambda issue: [item.name for item in getattr(issue.fields, 'versions', list())],
+                       FixVersions=lambda issue: [item.name for item in getattr(issue.fields, 'fixVersions', list())],
+                       Components=lambda issue: [item.name for item in issue.fields.components],
+                       IssueLinks=lambda issue: issue.fields.issuelinks,
+                       SubTasks=lambda issue: issue.fields.subtasks,
+                       Attachments=lambda issue: issue.fields.attachment,
                        )
 
 

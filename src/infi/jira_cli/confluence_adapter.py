@@ -6,8 +6,7 @@ try:
     from urlparse import urljoin
 except:
     from urllib.parse import urljoin
-from .credential_store import ConfluenceCredentialsStore
-from requests.auth import HTTPBasicAuth
+from .credential_store import ConfluenceCredentialsStore, BasicOrBearerAuth
 
 
 @cached_function
@@ -16,7 +15,7 @@ def get_auth():
     fqdn = config.confluence_fqdn
     credential_store = ConfluenceCredentialsStore()
     credentials = credential_store.get_credentials(fqdn)
-    return HTTPBasicAuth(credentials.get_username(), credentials.get_password())
+    return BasicOrBearerAuth(credentials)
 
 
 @cached_function
@@ -34,8 +33,8 @@ def _get_confluence_uri(path):
 
 @cached_function
 def _get_confluence_global_response(global_label):
-    # Consider only pages under TWDRAFTS space with suffix of vPUBLISHED
-    project_params = dict(type='page', label='global:{}'.format(global_label), query='"*vPUBLISHED$"', spaceKey='TWDRAFTS')
+    # Consider only pages under TWDRAFTS space with suffix of vHOST-RNs
+    project_params = dict(type='page', label='global:{}'.format(global_label), query='"*vHOST-RNs$"', spaceKey='TWDRAFTS')
     return requests.get(_get_confluence_uri('prototype/1/search/site'),
                         params=project_params,
                         headers=get_headers(),
